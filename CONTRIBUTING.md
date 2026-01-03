@@ -69,6 +69,7 @@ npm test -- test/core.test.ts
 ## Commits
 
 Use conventional commits:
+
 - `feat:` New feature
 - `fix:` Bug fix
 - `docs:` Documentation

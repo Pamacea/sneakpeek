@@ -4,9 +4,10 @@
 
 import React, { useState } from 'react';
 import { Box, Text, useInput } from 'ink';
-import { Frame, Divider, HintBar } from '../components/ui/Layout.js';
+import { ScreenLayout } from '../components/ui/ScreenLayout.js';
 import { ProviderCard } from '../components/ui/Menu.js';
-import { colors, icons } from '../components/ui/theme.js';
+import { colors, icons, keyHints } from '../components/ui/theme.js';
+import { getProviderEducation } from '../content/providers.js';
 
 interface Provider {
   key: string;
@@ -21,19 +22,20 @@ interface ProviderSelectScreenProps {
   onSelect: (key: string) => void;
 }
 
-export const ProviderSelectScreen: React.FC<ProviderSelectScreenProps> = ({
-  providers,
-  onSelect,
-}) => {
+export const ProviderSelectScreen: React.FC<ProviderSelectScreenProps> = ({ providers, onSelect }) => {
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const [showDetails, setShowDetails] = useState(false);
+
+  // Get current selected provider and its education
+  const currentProvider = providers[selectedIndex];
+  const education = currentProvider ? getProviderEducation(currentProvider.key) : null;
 
   // Find next non-experimental provider index
   const findNextSelectable = (current: number, direction: 1 | -1): number => {
     let next = current;
     for (let i = 0; i < providers.length; i++) {
-      next = direction === 1
-        ? (next < providers.length - 1 ? next + 1 : 0)
-        : (next > 0 ? next - 1 : providers.length - 1);
+      next =
+        direction === 1 ? (next < providers.length - 1 ? next + 1 : 0) : next > 0 ? next - 1 : providers.length - 1;
       if (!providers[next]?.experimental) return next;
     }
     return current; // No non-experimental found, stay put
@@ -52,29 +54,25 @@ export const ProviderSelectScreen: React.FC<ProviderSelectScreenProps> = ({
         onSelect(provider.key);
       }
     }
+    // Toggle details with ? key
+    if (input === '?') {
+      setShowDetails((prev) => !prev);
+    }
   });
 
   return (
-    <Frame borderColor={colors.borderFocus}>
-      <Box marginBottom={1}>
-        <Text color={colors.gold} bold>{icons.bullet} </Text>
-        <Text color={colors.textBright} bold>Select Provider</Text>
-      </Box>
-      <Text color={colors.textMuted}>
-        Choose an API gateway to power your Claude Code variant
-      </Text>
-
-      <Divider color={colors.border} />
-
+    <ScreenLayout
+      title="Select Provider"
+      subtitle="Choose an API gateway to power your Claude Code variant"
+      hints={[keyHints.continue, showDetails ? '? Hide details' : '? Show details']}
+    >
       {/* Help text */}
-      <Box marginBottom={1}>
+      <Box marginBottom={1} flexDirection="column">
         <Text color={colors.textMuted}>
-          {icons.star} <Text color={colors.gold}>Zai Cloud</Text> and{' '}
-          <Text color={colors.gold}>MiniMax Cloud</Text> are fully supported
+          {icons.star} <Text color={colors.gold}>Zai Cloud</Text> and <Text color={colors.gold}>MiniMax Cloud</Text> are
+          fully supported
         </Text>
-        <Text color={colors.textMuted}>
-          {icons.bullet} OpenRouter/Local LLMs require model mapping
-        </Text>
+        <Text color={colors.textMuted}>{icons.bullet} OpenRouter/Local LLMs require model mapping</Text>
       </Box>
 
       <Box flexDirection="column" marginY={1}>
@@ -88,8 +86,61 @@ export const ProviderSelectScreen: React.FC<ProviderSelectScreenProps> = ({
         ))}
       </Box>
 
-      <Divider />
-      <HintBar />
-    </Frame>
+      {/* Details panel - shows when ? is pressed */}
+      {showDetails && education && (
+        <Box flexDirection="column" marginTop={1} paddingX={1}>
+          <Box marginBottom={1}>
+            <Text color={colors.gold}>{icons.star} </Text>
+            <Text color={colors.text} bold>
+              {education.headline}
+            </Text>
+          </Box>
+
+          {/* Features */}
+          <Box flexDirection="column" marginLeft={2}>
+            {education.features.map((feature, i) => (
+              <Text key={i} color={colors.textMuted}>
+                {icons.bullet} {feature}
+              </Text>
+            ))}
+          </Box>
+
+          {/* Setup note */}
+          {education.setupNote && (
+            <Box marginTop={1} marginLeft={2}>
+              <Text color={colors.textDim}>
+                {icons.pointer} <Text italic>{education.setupNote}</Text>
+              </Text>
+            </Box>
+          )}
+
+          {/* Setup links */}
+          {education.setupLinks && (
+            <Box flexDirection="column" marginTop={1} marginLeft={2}>
+              <Text color={colors.textMuted}>
+                Subscribe: <Text color={colors.primaryBright}>{education.setupLinks.subscribe}</Text>
+              </Text>
+              {education.setupLinks.docs && (
+                <Text color={colors.textMuted}>
+                  Docs: <Text color={colors.primaryBright}>{education.setupLinks.docs}</Text>
+                </Text>
+              )}
+              {education.setupLinks.github && (
+                <Text color={colors.textMuted}>
+                  GitHub: <Text color={colors.primaryBright}>{education.setupLinks.github}</Text>
+                </Text>
+              )}
+            </Box>
+          )}
+
+          {/* Best for */}
+          <Box marginTop={1} marginLeft={2}>
+            <Text color={colors.textDim}>
+              Best for: <Text color={colors.text}>{education.bestFor}</Text>
+            </Text>
+          </Box>
+        </Box>
+      )}
+    </ScreenLayout>
   );
 };

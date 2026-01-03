@@ -32,11 +32,7 @@ interface ProgressBarProps {
 /**
  * Progress bar with percentage
  */
-export const ProgressBar: React.FC<ProgressBarProps> = ({
-  percent,
-  width: customWidth,
-  showPercent = true,
-}) => {
+export const ProgressBar: React.FC<ProgressBarProps> = ({ percent, width: customWidth, showPercent = true }) => {
   const { stdout } = useStdout();
   const maxWidth = customWidth || (stdout?.columns ? Math.min(stdout.columns - 20, 50) : 40);
 
@@ -46,15 +42,9 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
 
   return (
     <Box>
-      <Text color={colors.primary}>
-        {icons.progressFull.repeat(filled)}
-      </Text>
-      <Text color={colors.textMuted}>
-        {icons.progressEmpty.repeat(empty)}
-      </Text>
-      {showPercent && (
-        <Text color={colors.text}> {Math.round(clampedPercent)}%</Text>
-      )}
+      <Text color={colors.primary}>{icons.progressFull.repeat(filled)}</Text>
+      <Text color={colors.textMuted}>{icons.progressEmpty.repeat(empty)}</Text>
+      {showPercent && <Text color={colors.text}> {Math.round(clampedPercent)}%</Text>}
     </Box>
   );
 };
@@ -114,9 +104,7 @@ export const StepList: React.FC<StepListProps> = ({ steps }) => {
         return (
           <Box key={idx}>
             <Text color={color}>{icon} </Text>
-            <Text color={step.status === 'pending' ? colors.textMuted : colors.text}>
-              {step.label}
-            </Text>
+            <Text color={step.status === 'pending' ? colors.textMuted : colors.text}>{step.label}</Text>
           </Box>
         );
       })}
@@ -137,22 +125,14 @@ interface HealthCheckProps {
 /**
  * Health check result display
  */
-export const HealthCheck: React.FC<HealthCheckProps> = ({
-  name,
-  ok,
-  details,
-}) => (
+export const HealthCheck: React.FC<HealthCheckProps> = ({ name, ok, details }) => (
   <Box flexDirection="column" marginBottom={1}>
     <Box>
-      <Text color={ok ? colors.success : colors.warning}>
-        {ok ? icons.check : icons.warning}{' '}
-      </Text>
+      <Text color={ok ? colors.success : colors.warning}>{ok ? icons.check : icons.warning} </Text>
       <Text color={colors.text} bold>
         {name}
       </Text>
-      <Text color={ok ? colors.success : colors.warning}>
-        {' '}{ok ? 'OK' : 'Issues'}
-      </Text>
+      <Text color={ok ? colors.success : colors.warning}> {ok ? 'OK' : 'Issues'}</Text>
     </Box>
     {details && (
       <Box marginLeft={3}>

@@ -18,8 +18,7 @@ export const ensureTweakccConfig = (tweakDir: string, brandKey?: string | null):
   const brandConfig = buildBrandConfig(brandKey);
   const desiredDisplay = brandConfig.settings.userMessageDisplay;
 
-  const normalizeFormat = (format?: string) =>
-    (format || '').replace(/\s+/g, '').toLowerCase();
+  const normalizeFormat = (format?: string) => (format || '').replace(/\s+/g, '').toLowerCase();
   const legacyFormats = new Set(['[z.ai]{}', '[minimax]{}']);
   const themeMatches = (a?: { id?: string; name?: string }, b?: { id?: string; name?: string }) =>
     (!!a?.id && !!b?.id && a.id === b.id) || (!!a?.name && !!b?.name && a.name === b.name);
@@ -32,13 +31,12 @@ export const ensureTweakccConfig = (tweakDir: string, brandKey?: string | null):
       let existingThemes = Array.isArray(existing.settings?.themes) ? existing.settings?.themes : [];
       const brandThemes = Array.isArray(brandConfig.settings.themes) ? brandConfig.settings.themes : [];
       const brandThemeId = brandThemes[0]?.id;
-      const looksLikeLegacy =
-        existingThemes.length === 1 && brandThemeId && existingThemes[0]?.id === brandThemeId;
+      const looksLikeLegacy = existingThemes.length === 1 && brandThemeId && existingThemes[0]?.id === brandThemeId;
       let didUpdate = false;
 
       if (brandKey === 'minimax' && existingThemes.length > 0) {
         const filtered = existingThemes.filter(
-          theme =>
+          (theme) =>
             theme?.id !== 'minimax-ember' &&
             theme?.id !== 'minimax-glass' &&
             theme?.id !== 'minimax-blade' &&
@@ -90,7 +88,7 @@ export const ensureTweakccConfig = (tweakDir: string, brandKey?: string | null):
       if (brandThemes.length > 0) {
         const mergedThemes = [
           ...brandThemes,
-          ...existingThemes.filter(existingTheme => !brandThemes.some(theme => themeMatches(existingTheme, theme))),
+          ...existingThemes.filter((existingTheme) => !brandThemes.some((theme) => themeMatches(existingTheme, theme))),
         ];
         const sameLength = mergedThemes.length === existingThemes.length;
         const sameOrder = sameLength && mergedThemes.every((theme, idx) => themeMatches(theme, existingThemes[idx]));
@@ -123,7 +121,11 @@ const resolveLocalTweakcc = (args: string[]) => {
   }
 };
 
-export const runTweakcc = (tweakDir: string, binaryPath: string, stdio: 'inherit' | 'pipe' = 'inherit'): TweakccResult => {
+export const runTweakcc = (
+  tweakDir: string,
+  binaryPath: string,
+  stdio: 'inherit' | 'pipe' = 'inherit'
+): TweakccResult => {
   const env = {
     ...process.env,
     TWEAKCC_CONFIG_DIR: tweakDir,

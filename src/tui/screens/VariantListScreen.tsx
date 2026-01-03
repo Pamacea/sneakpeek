@@ -4,9 +4,9 @@
 
 import React, { useState } from 'react';
 import { Box, Text, useInput } from 'ink';
-import { Frame, Divider, HintBar } from '../components/ui/Layout.js';
-import { Header } from '../components/ui/Typography.js';
+import { ScreenLayout } from '../components/ui/ScreenLayout.js';
 import { VariantCard } from '../components/ui/Menu.js';
+import { EmptyVariantsArt } from '../components/ui/AsciiArt.js';
 import { colors, icons } from '../components/ui/theme.js';
 
 interface Variant {
@@ -21,11 +21,7 @@ interface VariantListScreenProps {
   onBack: () => void;
 }
 
-export const VariantListScreen: React.FC<VariantListScreenProps> = ({
-  variants,
-  onSelect,
-  onBack,
-}) => {
+export const VariantListScreen: React.FC<VariantListScreenProps> = ({ variants, onSelect, onBack }) => {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const totalItems = variants.length + 1; // +1 for back button
 
@@ -51,17 +47,10 @@ export const VariantListScreen: React.FC<VariantListScreenProps> = ({
   const isBackSelected = selectedIndex === variants.length;
 
   return (
-    <Frame>
-      <Header
-        title="Manage Variants"
-        subtitle="Select a variant to manage"
-      />
-
-      <Divider />
-
+    <ScreenLayout title="Manage Variants" subtitle="Select a variant to manage">
       <Box flexDirection="column" marginY={1}>
         {variants.length === 0 ? (
-          <Text color={colors.textMuted}>No variants found.</Text>
+          <EmptyVariantsArt />
         ) : (
           variants.map((variant, idx) => (
             <VariantCard
@@ -84,9 +73,6 @@ export const VariantListScreen: React.FC<VariantListScreenProps> = ({
           </Text>
         </Box>
       </Box>
-
-      <Divider />
-      <HintBar />
-    </Frame>
+    </ScreenLayout>
   );
 };

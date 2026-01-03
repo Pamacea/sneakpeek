@@ -1,6 +1,7 @@
 # cc-mirror Design
 
 ## Goals
+
 - Create multiple isolated Claude Code variants, each with its own config + session store.
 - Provide a **full-screen TUI** for discovery, creation, and management.
 - Support unlimited providers with editable templates.
@@ -27,6 +28,7 @@
 Wrappers are installed into `~/.local/bin/<variant>` (configurable).
 
 ## Core Components
+
 - `src/providers/index.ts` — provider templates and env defaults
 - `src/brands/` — tweakcc brand presets (optional UI skins)
 - `src/core/` — file ops, tweakcc patching, variant CRUD (split by concern)
@@ -35,6 +37,7 @@ Wrappers are installed into `~/.local/bin/<variant>` (configurable).
 - `tweakcc` (dependency) — applies `cli.js` patches for each variant
 
 ## TUI Flow
+
 - **Home**: create, manage, update-all, doctor
 - **Quick setup**:
   - provider template
@@ -61,9 +64,11 @@ Wrappers are installed into `~/.local/bin/<variant>` (configurable).
   - sanity report for binaries + wrappers
 
 ## Updating Binaries
+
 - `cc-mirror update` re-runs `npm install` for the pinned package/version and re-applies tweakcc.
 
 ## Maintenance Checklist
+
 - Update all variants after Claude Code upgrades: `cc-mirror update`
 - Update a single variant: `cc-mirror update <name>`
 - Reapply or change brand preset: `cc-mirror update <name> --brand zai`
@@ -74,9 +79,11 @@ Wrappers are installed into `~/.local/bin/<variant>` (configurable).
 - Opt out of skill install: `--no-skill-install`
 
 ## Provider Extensibility
+
 Provider templates are plain TS objects; add new providers by extending `src/providers/index.ts`.
 
 ## Auth Handling
+
 When an API key is supplied, cc-mirror writes `ANTHROPIC_API_KEY` into the variant config
 so Claude Code recognizes API-key auth during onboarding.
 
@@ -102,9 +109,11 @@ Prompt packs (provider overlays) are injected into tweakcc prompt fragments afte
 dev-browser is installed into `~/.cc-mirror/<variant>/config/skills/dev-browser` by default for Z.ai and MiniMax variants (opt out with `--no-skill-install`).
 
 ## Brand Presets
+
 Brand presets are optional tweakcc configurations written into `~/.cc-mirror/<variant>/tweakcc/config.json`.
 Presets are provider-aware (e.g., `zai` auto-selects the Z.ai Carbon skin, `minimax` selects MiniMax Pulse) but can be overridden via `--brand`.
 
 ## Install (npm-only)
+
 cc-mirror always installs `@anthropic-ai/claude-code@2.0.76` into `~/.cc-mirror/<variant>/npm` and runs its `cli.js`.
 Use `--npm-package` to override the package name; the version stays pinned.

@@ -28,7 +28,7 @@ const copyDir = (source: string, target: string) => {
 const resolveSkillSourceDir = (repoDir: string): string | null => {
   const direct = path.join(repoDir, SKILL_SUBDIR);
   if (fs.existsSync(direct)) return direct;
-  const nested = fs.readdirSync(repoDir).find(entry => entry.startsWith('dev-browser-'));
+  const nested = fs.readdirSync(repoDir).find((entry) => entry.startsWith('dev-browser-'));
   if (nested) {
     const candidate = path.join(repoDir, nested, SKILL_SUBDIR);
     if (fs.existsSync(candidate)) return candidate;
@@ -121,8 +121,12 @@ const spawnAsync = (cmd: string, args: string[]): Promise<{ ok: boolean; message
     const child = spawn(cmd, args, { stdio: 'pipe' });
     let stderr = '';
     let stdout = '';
-    child.stdout?.on('data', (d) => { stdout += d.toString(); });
-    child.stderr?.on('data', (d) => { stderr += d.toString(); });
+    child.stdout?.on('data', (d) => {
+      stdout += d.toString();
+    });
+    child.stderr?.on('data', (d) => {
+      stderr += d.toString();
+    });
     child.on('close', (code) => {
       if (code === 0) resolve({ ok: true });
       else resolve({ ok: false, message: stderr.trim() || stdout.trim() || `${cmd} failed` });

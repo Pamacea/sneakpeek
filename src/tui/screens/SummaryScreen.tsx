@@ -4,8 +4,9 @@
 
 import React, { useState } from 'react';
 import { Box } from 'ink';
-import { Frame, Divider, Section, HintBar } from '../components/ui/Layout.js';
-import { Header, SummaryRow, Title } from '../components/ui/Typography.js';
+import { ScreenLayout } from '../components/ui/ScreenLayout.js';
+import { Section } from '../components/ui/Layout.js';
+import { SummaryRow } from '../components/ui/Typography.js';
 import { SelectMenu } from '../components/ui/Menu.js';
 import type { MenuItem } from '../components/ui/types.js';
 
@@ -23,7 +24,6 @@ interface SummaryData {
   binDir: string;
   npmPackage: string;
   npmVersion: string;
-  useTweak: boolean;
   usePromptPack: boolean;
   promptPackMode: 'minimal' | 'maximal';
   installSkill: boolean;
@@ -37,12 +37,7 @@ interface SummaryScreenProps {
   onCancel: () => void;
 }
 
-export const SummaryScreen: React.FC<SummaryScreenProps> = ({
-  data,
-  onConfirm,
-  onBack,
-  onCancel,
-}) => {
+export const SummaryScreen: React.FC<SummaryScreenProps> = ({ data, onConfirm, onBack, onCancel }) => {
   const [selectedIndex, setSelectedIndex] = useState(0);
 
   const actions: MenuItem[] = [
@@ -58,37 +53,29 @@ export const SummaryScreen: React.FC<SummaryScreenProps> = ({
   };
 
   return (
-    <Frame>
-      <Header
-        title="Review Configuration"
-        subtitle="Confirm settings before creating variant"
-      />
-
-      <Divider />
-
+    <ScreenLayout title="Review Configuration" subtitle="Confirm settings before creating variant">
       <Section title="Identity">
         <SummaryRow label="Name" value={data.name} />
         <SummaryRow label="Command" value={`$ ${data.name}`} />
         <SummaryRow label="Provider" value={data.providerLabel} />
       </Section>
 
-  <Section title="Connection">
-    <SummaryRow label="Base URL" value={data.baseUrl || '(default)'} />
-    <SummaryRow label="API Key" value={data.apiKey ? '••••••••' : '(not set)'} />
-    {data.apiKeySource && <SummaryRow label="API key source" value={data.apiKeySource} />}
-    {(data.modelSonnet || data.modelOpus || data.modelHaiku) && (
-      <>
-        <SummaryRow label="Model (Sonnet)" value={data.modelSonnet || '(unset)'} />
-        <SummaryRow label="Model (Opus)" value={data.modelOpus || '(unset)'} />
-        <SummaryRow label="Model (Haiku)" value={data.modelHaiku || '(unset)'} />
-      </>
-    )}
-  </Section>
+      <Section title="Connection">
+        <SummaryRow label="Base URL" value={data.baseUrl || '(default)'} />
+        <SummaryRow label="API Key" value={data.apiKey ? '••••••••' : '(not set)'} />
+        {data.apiKeySource && <SummaryRow label="API key source" value={data.apiKeySource} />}
+        {(data.modelSonnet || data.modelOpus || data.modelHaiku) && (
+          <>
+            <SummaryRow label="Model (Sonnet)" value={data.modelSonnet || '(unset)'} />
+            <SummaryRow label="Model (Opus)" value={data.modelOpus || '(unset)'} />
+            <SummaryRow label="Model (Haiku)" value={data.modelHaiku || '(unset)'} />
+          </>
+        )}
+      </Section>
 
-  <Section title="Installation">
+      <Section title="Installation">
         <SummaryRow label="Package" value={data.npmPackage} />
         <SummaryRow label="Version" value={data.npmVersion} />
-        <SummaryRow label="tweakcc" value={data.useTweak ? 'Yes' : 'No'} />
         <SummaryRow label="Prompt pack" value={data.usePromptPack ? 'Yes' : 'No'} />
         {data.usePromptPack && (
           <SummaryRow label="Prompt mode" value={data.promptPackMode === 'maximal' ? 'Maximal' : 'Minimal'} />
@@ -102,8 +89,6 @@ export const SummaryScreen: React.FC<SummaryScreenProps> = ({
         <SummaryRow label="Wrapper" value={`${data.binDir}/${data.name}`} />
       </Section>
 
-      <Divider />
-
       <Box marginY={1}>
         <SelectMenu
           items={actions}
@@ -112,8 +97,6 @@ export const SummaryScreen: React.FC<SummaryScreenProps> = ({
           onSelect={handleSelect}
         />
       </Box>
-
-      <HintBar />
-    </Frame>
+    </ScreenLayout>
   );
 };

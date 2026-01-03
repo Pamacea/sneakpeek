@@ -30,7 +30,7 @@ export const runTui = async () => {
     path.join(dirname, 'tui.mjs'),
   ].filter(Boolean) as string[];
 
-  const target = candidates.find(filePath => fs.existsSync(filePath));
+  const target = candidates.find((filePath) => fs.existsSync(filePath));
   if (!target) {
     throw new Error('Unable to locate TUI entrypoint.');
   }

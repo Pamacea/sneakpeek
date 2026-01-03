@@ -64,6 +64,8 @@ export interface UpdateVariantOptions {
   npmPackage?: string;
   brand?: string;
   noTweak?: boolean;
+  /** Skip npm package reinstall - for settings-only updates (models, env) */
+  settingsOnly?: boolean;
   promptPack?: boolean;
   promptPackMode?: 'minimal' | 'maximal';
   skillInstall?: boolean;

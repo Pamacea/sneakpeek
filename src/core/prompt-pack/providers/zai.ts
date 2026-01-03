@@ -37,7 +37,8 @@ Output:
 - Use '--output-format json' for { success, data, timestamp } wrapping.
 `.trim();
 
-const buildZaiContract = (mode: PromptPackMode) => `
+const buildZaiContract = (mode: PromptPackMode) =>
+  `
 <explicit_guidance>
 Provider: z.ai (GLM)
 
@@ -81,7 +82,7 @@ Rules:
 - Prefer zai-cli via Bash for web/search/vision.
 - Other MCP tools may exist if the user configured them; use them only if explicitly requested or clearly needed.
 Blocked tools:
-${ZAI_BLOCKED_MCP_TOOLS.map(tool => `- ${tool}`).join('\n')}
+${ZAI_BLOCKED_MCP_TOOLS.map((tool) => `- ${tool}`).join('\n')}
 </warning>
 
 ${operatingSpec(mode)}
@@ -92,14 +93,15 @@ ${verbositySpec}
 </explicit_guidance>
 `.trim();
 
-export const buildZaiExcerpt = () => `
+export const buildZaiExcerpt = () =>
+  `
 <tool_info>
 Z.ai tool routing:
 - Use Bash + npx --yes zai-cli for web/search/vision.
 - Ignore the Z.ai-injected MCP tools listed below (treat them as non-existent).
 - No zai-cli skill is installed; do not use Skill for this.
 Blocked MCP tool names (treat as non-existent):
-${ZAI_BLOCKED_MCP_TOOLS.map(tool => `- ${tool}`).join('\n')}
+${ZAI_BLOCKED_MCP_TOOLS.map((tool) => `- ${tool}`).join('\n')}
 </tool_info>
 
 ${subjectiveWorkSpec}
@@ -157,7 +159,7 @@ Z.ai routing: prefer Bash + npx --yes zai-cli search "<query>" --count 5 --outpu
   mcpsearch: `
 <warning priority="critical">
 Z.ai MCP policy: never select these Z.ai-injected MCP tools (treat them as non-existent):
-${ZAI_BLOCKED_MCP_TOOLS.map(tool => `- ${tool}`).join('\n')}
+${ZAI_BLOCKED_MCP_TOOLS.map((tool) => `- ${tool}`).join('\n')}
 </warning>
 
 <explicit_guidance>

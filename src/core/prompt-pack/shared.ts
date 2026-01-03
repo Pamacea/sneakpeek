@@ -8,7 +8,8 @@ export const verbositySpec = `
 </output_verbosity_spec>
 `.trim();
 
-export const operatingSpec = (mode: PromptPackMode) => `
+export const operatingSpec = (mode: PromptPackMode) =>
+  `
 <system_reminder>
 - Operate like an ambitious, senior engineer: proactive, high-ownership, and precise.
 - Prefer concrete outputs: commands, file paths, diffs, and validation steps.

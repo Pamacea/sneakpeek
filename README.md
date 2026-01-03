@@ -1,26 +1,53 @@
-# cc-mirror
+# CC-MIRROR
 
-[![npm version](https://img.shields.io/npm/v/cc-mirror.svg)](https://www.npmjs.com/package/cc-mirror)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Twitter Follow](https://img.shields.io/twitter/follow/nummanali?style=social)](https://twitter.com/nummanali)
+<p align="center">
+  <img src="./assets/cc-mirror-providers.png" alt="CC-MIRROR Provider Themes" width="800">
+</p>
 
-**Create multiple isolated Claude Code variants with custom providers.**
+<p align="center">
+  <a href="https://www.npmjs.com/package/cc-mirror"><img src="https://img.shields.io/npm/v/cc-mirror.svg" alt="npm version"></a>
+  <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a>
+  <a href="https://twitter.com/nummanali"><img src="https://img.shields.io/twitter/follow/nummanali?style=social" alt="Twitter Follow"></a>
+</p>
 
-Run Claude Code with Z.ai, MiniMax, OpenRouter, Claude Code Router, or any Anthropic-compatible API — each with its own config, themes, and session storage.
+<p align="center">
+  <strong>Create multiple isolated Claude Code variants with custom providers.</strong>
+</p>
+
+<p align="center">
+  Run Claude Code with Z.ai, MiniMax, OpenRouter, Claude Code Router, or any Anthropic-compatible API —<br>
+  each with its own config, themes, and session storage.
+</p>
+
+---
+
+<p align="center">
+  <img src="./assets/cc-mirror-home.png" alt="CC-MIRROR Home Screen" width="600">
+</p>
+
+## Why CC-MIRROR?
+
+Claude Code is powerful, but locked to Anthropic's API. **CC-MIRROR** lets you:
+
+- **Use any provider** — Z.ai's GLM models, MiniMax-M2.1, OpenRouter's 100+ models, or route to local LLMs via Claude Code Router
+- **Keep variants isolated** — Each variant has its own config, sessions, and themes
+- **Switch instantly** — Run `zai` for Z.ai, `minimax` for MiniMax, `openrouter` for OpenRouter
 
 ## Features
 
-- **Multiple Providers** — Z.ai, MiniMax, OpenRouter, Claude Code Router, or custom
+- **Multiple Providers** — Z.ai, MiniMax, OpenRouter, Claude Code Router, or custom endpoints
 - **Complete Isolation** — Each variant has its own config, sessions, and themes
-- **Brand Themes** — Custom color schemes per provider (via tweakcc)
-- **Prompt Packs** — Enhanced system prompts for Z.ai/MiniMax
+- **Brand Themes** — Custom color schemes per provider via [tweakcc](https://github.com/Piebald-AI/tweakcc)
+- **Prompt Packs** — Enhanced system prompts for Z.ai and MiniMax
 - **One-Command Updates** — Update all variants when Claude Code releases
 - **Interactive TUI** — Full-screen setup wizard or CLI for automation
 
-## Installation
+## Quick Start
+
+### Installation
 
 ```bash
-# Run directly with npx
+# Run directly with npx (opens TUI by default)
 npx cc-mirror
 
 # Or install globally
@@ -28,35 +55,45 @@ npm install -g cc-mirror
 cc-mirror
 ```
 
-## Quick Start
-
 ### Interactive TUI
 
+Running `cc-mirror` with no arguments opens the interactive TUI:
+
 ```bash
-npx cc-mirror --tui
+cc-mirror
 ```
+
+<p align="center">
+  <img src="./assets/cc-mirror-select.png" alt="Provider Selection" width="600">
+</p>
 
 ### CLI Quick Setup
 
 ```bash
-# Z.ai
-npx cc-mirror quick --provider zai --api-key "$ZAI_API_KEY"
+# Z.ai (GLM Coding Plan)
+npx cc-mirror quick --provider zai --api-key "$Z_AI_API_KEY"
 
-# MiniMax
+# MiniMax (MiniMax-M2.1)
 npx cc-mirror quick --provider minimax --api-key "$MINIMAX_API_KEY"
 
-# OpenRouter (requires model mapping)
+# OpenRouter (100+ models)
 npx cc-mirror quick --provider openrouter --api-key "$OPENROUTER_API_KEY" \
   --model-sonnet "anthropic/claude-3.5-sonnet" \
   --model-opus "anthropic/claude-3-opus" \
   --model-haiku "anthropic/claude-3-haiku"
 
-# Claude Code Router (route to any model)
-npx cc-mirror quick --provider ccrouter \
-  --model-sonnet "deepseek,deepseek-chat" \
-  --model-opus "deepseek,deepseek-reasoner" \
-  --model-haiku "ollama,qwen2.5-coder:latest"
+# Claude Code Router (local LLMs)
+npx cc-mirror quick --provider ccrouter
 ```
+
+## Supported Providers
+
+| Provider       | Description                                  | Auth       | Model Mapping                                         |
+| -------------- | -------------------------------------------- | ---------- | ----------------------------------------------------- |
+| **Z.ai**       | GLM-4.7 via GLM Coding Plan                  | API Key    | Auto (GLM-4.7 for Sonnet/Opus, GLM-4.5-Air for Haiku) |
+| **MiniMax**    | MiniMax-M2.1 via MiniMax Coding Plan         | API Key    | Auto (single model for all tiers)                     |
+| **OpenRouter** | Access 100+ models through one API           | Auth Token | Required (you choose the models)                      |
+| **CCRouter**   | Route to local LLMs (Ollama, DeepSeek, etc.) | Optional   | Handled by CCRouter config                            |
 
 ## Variant Structure
 
@@ -80,12 +117,12 @@ Wrapper: ~/.local/bin/<variant>
 
 ```bash
 # Create/manage variants
-cc-mirror create [options]    # Full control
-cc-mirror quick [options]     # Fast setup
+cc-mirror create [options]    # Full configuration wizard
+cc-mirror quick [options]     # Fast setup with defaults
 cc-mirror list                # List all variants
-cc-mirror update [name]       # Update one or all
-cc-mirror remove <name>       # Delete variant
-cc-mirror doctor              # Health check
+cc-mirror update [name]       # Update one or all variants
+cc-mirror remove <name>       # Delete a variant
+cc-mirror doctor              # Health check all variants
 cc-mirror tweak <name>        # Launch tweakcc UI
 
 # Run your variant
@@ -93,31 +130,31 @@ zai                           # If you named it 'zai'
 minimax                       # If you named it 'minimax'
 ```
 
-## Options
+## CLI Options
 
 ```
 --provider <name>        zai | minimax | openrouter | ccrouter | custom
 --api-key <key>          Provider API key
 --base-url <url>         Custom API endpoint
---model-sonnet <name>    Map to sonnet model
---model-opus <name>      Map to opus model
---model-haiku <name>     Map to haiku model
+--model-sonnet <name>    Map to sonnet model (for OpenRouter)
+--model-opus <name>      Map to opus model (for OpenRouter)
+--model-haiku <name>     Map to haiku model (for OpenRouter)
 --brand <preset>         Theme: auto | none | zai | minimax | openrouter | ccrouter
 --root <path>            Variants root (default: ~/.cc-mirror)
 --bin-dir <path>         Wrapper dir (default: ~/.local/bin)
---no-tweak               Skip tweakcc
---no-prompt-pack         Skip prompt enhancements
---no-skill-install       Skip dev-browser skill
+--no-tweak               Skip tweakcc theme application
+--no-prompt-pack         Skip prompt pack enhancements
+--no-skill-install       Skip dev-browser skill installation
 ```
 
-## Provider Details
+## Brand Themes
 
-| Provider | Auth | Model Mapping | Notes |
-|----------|------|---------------|-------|
-| Z.ai | API Key | Auto | Enhanced prompts, shell env support |
-| MiniMax | API Key | Auto | Enhanced prompts, MCP server pre-configured |
-| OpenRouter | Auth Token | Required | Works with any model on OpenRouter |
-| CCRouter | Optional | Required | Route to any provider via Claude Code Router |
+Each provider has an optional color theme applied via [tweakcc](https://github.com/Piebald-AI/tweakcc):
+
+- **zai** — Dark carbon with gold accents
+- **minimax** — Coral/red/orange spectrum
+- **openrouter** — Teal/cyan gradient
+- **ccrouter** — Sky blue accents
 
 ## Updating Variants
 
@@ -131,27 +168,25 @@ cc-mirror update
 cc-mirror update zai
 ```
 
-## Brand Themes
-
-Each provider has an optional color theme:
-
-- **zai** — Dark carbon with gold accents
-- **minimax** — Coral/red/orange spectrum
-- **openrouter** — Teal/cyan (matching ASCII splash)
-- **ccrouter** — Sky blue accents
-
-Themes are applied via [tweakcc](https://github.com/tweak-cc/tweakcc).
-
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup and guidelines.
+Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup and guidelines.
+
+**Want to add a provider?** Check the [Provider Guide](docs/TWEAKCC-GUIDE.md) for details.
+
+## Related Projects
+
+- [tweakcc](https://github.com/Piebald-AI/tweakcc) — Theme and customize Claude Code
+- [Claude Code Router](https://github.com/musistudio/claude-code-router) — Route Claude Code to any LLM
+- [n-skills](https://github.com/numman-ali/n-skills) — Universal skills for AI agents
 
 ## License
 
 MIT — see [LICENSE](LICENSE)
 
-## Author
+---
 
-**Numman Ali**
-- Twitter: [@nummanali](https://twitter.com/nummanali)
-- GitHub: [@numman-ali](https://github.com/numman-ali)
+<p align="center">
+  <strong>Created by <a href="https://github.com/numman-ali">Numman Ali</a></strong><br>
+  <a href="https://twitter.com/nummanali">@nummanali</a>
+</p>

@@ -17,24 +17,24 @@ export const writeWrapper = (
     '  node - <<\'NODE\' > "$__cc_mirror_env_file" || true',
     "const fs = require('fs');",
     "const path = require('path');",
-    "const dir = process.env.CLAUDE_CONFIG_DIR;",
-    "if (!dir) process.exit(0);",
+    'const dir = process.env.CLAUDE_CONFIG_DIR;',
+    'if (!dir) process.exit(0);',
     "const file = path.join(dir, 'settings.json');",
-    "const escape = (value) => \"'\" + String(value).replace(/'/g, \"'\\\"'\\\"'\") + \"'\";",
-    "try {",
-    "  if (fs.existsSync(file)) {",
+    'const escape = (value) => "\'" + String(value).replace(/\'/g, "\'\\"\'\\"\'") + "\'";',
+    'try {',
+    '  if (fs.existsSync(file)) {',
     "    const data = JSON.parse(fs.readFileSync(file, 'utf8'));",
     "    const env = data && typeof data === 'object' ? data.env : null;",
     "    if (env && typeof env === 'object') {",
-    "      for (const [key, value] of Object.entries(env)) {",
-    "        if (!key) continue;",
-    "        process.stdout.write(`export ${key}=${escape(value)}\\n`);",
-    "      }",
-    "    }",
-    "  }",
-    "} catch {",
-    "  // ignore malformed settings",
-    "}",
+    '      for (const [key, value] of Object.entries(env)) {',
+    '        if (!key) continue;',
+    '        process.stdout.write(`export ${key}=${escape(value)}\\n`);',
+    '      }',
+    '    }',
+    '  }',
+    '} catch {',
+    '  // ignore malformed settings',
+    '}',
     'NODE',
     '  if [[ -s "$__cc_mirror_env_file" ]]; then',
     '    # shellcheck disable=SC1090',
@@ -47,28 +47,28 @@ export const writeWrapper = (
   const C = {
     reset: '\x1b[0m',
     // Zai: Gold/Amber gradient
-    zaiPrimary: '\x1b[38;5;220m',     // Gold
-    zaiSecondary: '\x1b[38;5;214m',   // Orange-gold
-    zaiAccent: '\x1b[38;5;208m',      // Dark orange
-    zaiDim: '\x1b[38;5;172m',         // Muted gold
+    zaiPrimary: '\x1b[38;5;220m', // Gold
+    zaiSecondary: '\x1b[38;5;214m', // Orange-gold
+    zaiAccent: '\x1b[38;5;208m', // Dark orange
+    zaiDim: '\x1b[38;5;172m', // Muted gold
     // MiniMax: Coral/Red/Orange gradient (from brand image)
-    mmPrimary: '\x1b[38;5;203m',      // Coral/salmon red
-    mmSecondary: '\x1b[38;5;209m',    // Light coral/orange
-    mmAccent: '\x1b[38;5;208m',       // Orange
-    mmDim: '\x1b[38;5;167m',          // Muted coral/dark red
+    mmPrimary: '\x1b[38;5;203m', // Coral/salmon red
+    mmSecondary: '\x1b[38;5;209m', // Light coral/orange
+    mmAccent: '\x1b[38;5;208m', // Orange
+    mmDim: '\x1b[38;5;167m', // Muted coral/dark red
     // OpenRouter: Cyan/Teal gradient
-    orPrimary: '\x1b[38;5;43m',       // Teal
-    orSecondary: '\x1b[38;5;49m',     // Bright teal
-    orAccent: '\x1b[38;5;37m',        // Deep cyan
-    orDim: '\x1b[38;5;30m',           // Muted teal
+    orPrimary: '\x1b[38;5;43m', // Teal
+    orSecondary: '\x1b[38;5;49m', // Bright teal
+    orAccent: '\x1b[38;5;37m', // Deep cyan
+    orDim: '\x1b[38;5;30m', // Muted teal
     // CCRouter: Sky blue gradient
-    ccrPrimary: '\x1b[38;5;39m',      // Sky blue
-    ccrSecondary: '\x1b[38;5;45m',    // Bright cyan
-    ccrAccent: '\x1b[38;5;33m',       // Deep blue
-    ccrDim: '\x1b[38;5;31m',          // Muted blue
+    ccrPrimary: '\x1b[38;5;39m', // Sky blue
+    ccrSecondary: '\x1b[38;5;45m', // Bright cyan
+    ccrAccent: '\x1b[38;5;33m', // Deep blue
+    ccrDim: '\x1b[38;5;31m', // Muted blue
     // Default: White/Gray
-    defPrimary: '\x1b[38;5;255m',     // White
-    defDim: '\x1b[38;5;245m',         // Gray
+    defPrimary: '\x1b[38;5;255m', // White
+    defDim: '\x1b[38;5;245m', // Gray
   };
 
   const splash = [
@@ -79,7 +79,7 @@ export const writeWrapper = (
     '    __cc_show_label="1"',
     '    printf "\\n"',
     '    case "$__cc_style" in',
-    "      zai)",
+    '      zai)',
     "        cat <<'CCMZAI'",
     '',
     `${C.zaiPrimary}    ███████╗       █████╗ ██╗${C.reset}`,
@@ -95,7 +95,7 @@ export const writeWrapper = (
     'CCMZAI',
     '        __cc_show_label="0"',
     '        ;;',
-    "      minimax)",
+    '      minimax)',
     "        cat <<'CCMMIN'",
     '',
     `${C.mmPrimary}    ███╗   ███╗██╗███╗   ██╗██╗███╗   ███╗ █████╗ ██╗  ██╗${C.reset}`,
@@ -111,7 +111,7 @@ export const writeWrapper = (
     'CCMMIN',
     '        __cc_show_label="0"',
     '        ;;',
-    "      openrouter)",
+    '      openrouter)',
     "        cat <<'CCMORT'",
     '',
     `${C.orPrimary}     ██████╗ ██████╗ ███████╗███╗   ██╗${C.reset}`,
@@ -133,7 +133,7 @@ export const writeWrapper = (
     'CCMORT',
     '        __cc_show_label="0"',
     '        ;;',
-    "      ccrouter)",
+    '      ccrouter)',
     "        cat <<'CCMCCR'",
     '',
     `${C.ccrPrimary}     ██████╗ ██████╗██████╗  ██████╗ ██╗   ██╗████████╗███████╗██████╗${C.reset}`,

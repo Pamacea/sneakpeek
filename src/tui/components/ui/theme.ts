@@ -79,3 +79,42 @@ export const keyHints = {
 
 export type ColorKey = keyof typeof colors;
 export type IconKey = keyof typeof icons;
+
+/**
+ * Provider-specific colors
+ */
+export const providerColors = {
+  zai: {
+    primary: 'yellow',
+    border: 'yellow',
+    accent: 'yellowBright',
+  },
+  minimax: {
+    primary: 'red',
+    border: 'red',
+    accent: 'redBright',
+  },
+  openrouter: {
+    primary: 'cyan',
+    border: 'cyan',
+    accent: 'cyanBright',
+  },
+  ccrouter: {
+    primary: 'blue',
+    border: 'blue',
+    accent: 'blueBright',
+  },
+  default: {
+    primary: 'blue',
+    border: 'blue',
+    accent: 'blueBright',
+  },
+} as const;
+
+/**
+ * Get colors for a specific provider
+ */
+export const getProviderColors = (providerKey?: string) => {
+  if (!providerKey) return providerColors.default;
+  return providerColors[providerKey as keyof typeof providerColors] || providerColors.default;
+};

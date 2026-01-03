@@ -24,7 +24,7 @@ const writePromptFiles = (tweakDir: string) => {
 };
 
 test('sanitizeOverlayText removes backticks', () => {
-  assert.equal(sanitizeOverlayText("Use `code` blocks."), "Use 'code' blocks.");
+  assert.equal(sanitizeOverlayText('Use `code` blocks.'), "Use 'code' blocks.");
   const sanitized = sanitizeOverlayMap({ main: 'Hello `world`', websearch: '   ' });
   assert.equal(sanitized.main, "Hello 'world'");
   assert.equal(Object.hasOwn(sanitized, 'websearch'), false);
@@ -50,7 +50,7 @@ test('applyPromptPack writes overlays and is idempotent', () => {
   const systemPromptsDir = writePromptFiles(tweakDir);
 
   const overlays = resolveOverlays('zai', 'maximal');
-  const expectedUpdates = PROMPT_PACK_TARGETS.filter(target => overlays[target.key]).length;
+  const expectedUpdates = PROMPT_PACK_TARGETS.filter((target) => overlays[target.key]).length;
 
   const first = applyPromptPack(tweakDir, 'zai', 'maximal');
   assert.equal(first.changed, true);

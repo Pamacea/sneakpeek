@@ -80,10 +80,7 @@ export const ensureZaiMcpDeny = (configDir: string): boolean => {
   return true;
 };
 
-export const ensureSettingsEnvDefaults = (
-  configDir: string,
-  defaults: Record<string, string | number>
-): boolean => {
+export const ensureSettingsEnvDefaults = (configDir: string, defaults: Record<string, string | number>): boolean => {
   const settingsPath = path.join(configDir, SETTINGS_FILE);
   const existing = readJson<SettingsFile>(settingsPath) || {};
   const env: Record<string, string | number | undefined> = { ...(existing.env ?? {}) };

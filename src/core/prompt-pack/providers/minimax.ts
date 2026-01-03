@@ -4,7 +4,8 @@ import { operatingSpec, subjectiveWorkSpec, verbositySpec } from '../shared.js';
 export const MINIMAX_WEB_SEARCH = 'mcp__MiniMax__web_search';
 export const MINIMAX_UNDERSTAND_IMAGE = 'mcp__MiniMax__understand_image';
 
-const buildMinimaxContract = (mode: PromptPackMode) => `
+const buildMinimaxContract = (mode: PromptPackMode) =>
+  `
 <explicit_guidance>
 Provider: MiniMax
 
@@ -51,7 +52,8 @@ ${verbositySpec}
 </explicit_guidance>
 `.trim();
 
-export const buildMinimaxExcerpt = () => `
+export const buildMinimaxExcerpt = () =>
+  `
 <tool_info>
 MiniMax tool routing:
 - Web search MUST use ${MINIMAX_WEB_SEARCH} (load via MCPSearch first).

@@ -35,9 +35,7 @@ const mix = (hexA: string, hexB: string, weight: number) => {
   const a = hexToRgb(hexA);
   const b = hexToRgb(hexB);
   const w = Math.max(0, Math.min(1, weight));
-  return `rgb(${clamp(a.r + (b.r - a.r) * w)},${clamp(a.g + (b.g - a.g) * w)},${clamp(
-    a.b + (b.b - a.b) * w
-  )})`;
+  return `rgb(${clamp(a.r + (b.r - a.r) * w)},${clamp(a.g + (b.g - a.g) * w)},${clamp(a.b + (b.b - a.b) * w)})`;
 };
 
 const lighten = (hex: string, weight: number) => mix(hex, '#ffffff', weight);

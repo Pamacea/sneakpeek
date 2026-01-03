@@ -91,10 +91,10 @@ const PROVIDERS: Record<string, ProviderTemplate> = {
       CC_MIRROR_PROVIDER_LABEL: 'Claude Code Router',
       CC_MIRROR_SPLASH_STYLE: 'ccrouter',
     },
-    apiKeyLabel: 'CCR API key (optional)',
+    apiKeyLabel: 'Router URL',
     authMode: 'authToken',
-    requiresModelMapping: true,
-    credentialOptional: true,
+    requiresModelMapping: false, // Models configured in ~/.claude-code-router/config.json
+    credentialOptional: true, // No API key needed - CCRouter handles auth
   },
   custom: {
     key: 'custom',
@@ -120,7 +120,7 @@ export const listProviders = (includeExperimental = false): ProviderTemplate[] =
   if (includeExperimental) {
     return providers;
   }
-  return providers.filter(p => !p.experimental);
+  return providers.filter((p) => !p.experimental);
 };
 
 export interface BuildEnvParams {
@@ -151,13 +151,7 @@ const applyModelOverrides = (env: ProviderEnv, overrides?: ModelOverrides) => {
   }
 };
 
-export const buildEnv = ({
-  providerKey,
-  baseUrl,
-  apiKey,
-  extraEnv,
-  modelOverrides,
-}: BuildEnvParams): ProviderEnv => {
+export const buildEnv = ({ providerKey, baseUrl, apiKey, extraEnv, modelOverrides }: BuildEnvParams): ProviderEnv => {
   const provider = getProvider(providerKey);
   if (!provider) {
     throw new Error(`Unknown provider: ${providerKey}`);

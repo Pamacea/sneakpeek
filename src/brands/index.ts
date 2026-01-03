@@ -40,8 +40,7 @@ const BRAND_PRESETS: Record<string, BrandPreset> = {
 
 export const listBrandPresets = (): BrandPreset[] => Object.values(BRAND_PRESETS);
 
-export const getBrandPreset = (key?: string | null): BrandPreset | undefined =>
-  key ? BRAND_PRESETS[key] : undefined;
+export const getBrandPreset = (key?: string | null): BrandPreset | undefined => (key ? BRAND_PRESETS[key] : undefined);
 
 export const resolveBrandKey = (providerKey: string, requested?: string): string | null => {
   const normalized = requested?.trim().toLowerCase();

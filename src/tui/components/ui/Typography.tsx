@@ -19,9 +19,7 @@ export const Header: React.FC<HeaderProps> = ({ title, subtitle }) => (
     <Text color={colors.primary} bold>
       {title}
     </Text>
-    {subtitle && (
-      <Text color={colors.textMuted}>{subtitle}</Text>
-    )}
+    {subtitle && <Text color={colors.textMuted}>{subtitle}</Text>}
   </Box>
 );
 
@@ -33,10 +31,7 @@ interface TitleProps {
 /**
  * Section title
  */
-export const Title: React.FC<TitleProps> = ({
-  children,
-  color = colors.text,
-}) => (
+export const Title: React.FC<TitleProps> = ({ children, color = colors.text }) => (
   <Text color={color} bold>
     {children}
   </Text>
@@ -49,9 +44,7 @@ interface LabelProps {
 /**
  * Muted label text
  */
-export const Label: React.FC<LabelProps> = ({ children }) => (
-  <Text color={colors.textMuted}>{children}</Text>
-);
+export const Label: React.FC<LabelProps> = ({ children }) => <Text color={colors.textMuted}>{children}</Text>;
 
 interface ValueProps {
   children: string;
@@ -60,9 +53,7 @@ interface ValueProps {
 /**
  * Value text (white/bright)
  */
-export const Value: React.FC<ValueProps> = ({ children }) => (
-  <Text color={colors.text}>{children}</Text>
-);
+export const Value: React.FC<ValueProps> = ({ children }) => <Text color={colors.text}>{children}</Text>;
 
 interface SummaryRowProps {
   label: string;
@@ -73,11 +64,7 @@ interface SummaryRowProps {
 /**
  * Summary row with label and value
  */
-export const SummaryRow: React.FC<SummaryRowProps> = ({
-  label,
-  value,
-  labelWidth = 16,
-}) => (
+export const SummaryRow: React.FC<SummaryRowProps> = ({ label, value, labelWidth = 16 }) => (
   <Box>
     <Box width={labelWidth}>
       <Text color={colors.textMuted}>{label}</Text>

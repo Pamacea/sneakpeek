@@ -4,8 +4,7 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import { Box, Text } from 'ink';
-import { Frame, Divider } from '../components/ui/Layout.js';
-import { Header } from '../components/ui/Typography.js';
+import { ScreenLayout } from '../components/ui/ScreenLayout.js';
 import { ProgressBar, StepList, Spinner } from '../components/ui/Progress.js';
 import { colors } from '../components/ui/theme.js';
 import type { Step } from '../components/ui/types.js';
@@ -16,11 +15,7 @@ interface ProgressScreenProps {
   variantName?: string;
 }
 
-export const ProgressScreen: React.FC<ProgressScreenProps> = ({
-  title,
-  lines,
-  variantName,
-}) => {
+export const ProgressScreen: React.FC<ProgressScreenProps> = ({ title, lines, variantName }) => {
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
 
   useEffect(() => {
@@ -43,20 +38,19 @@ export const ProgressScreen: React.FC<ProgressScreenProps> = ({
 
   // Calculate progress - estimate ~10 steps total for a typical install
   const estimatedTotalSteps = 10;
-  const progress = lines.length === 0
-    ? Math.min(15, elapsedSeconds * 3)
-    : Math.min(95, Math.round((steps.length / estimatedTotalSteps) * 90) + 5);
-  const elapsedLabel = elapsedSeconds < 60 ? `${elapsedSeconds}s` : `${Math.floor(elapsedSeconds / 60)}m ${elapsedSeconds % 60}s`;
+  const progress =
+    lines.length === 0
+      ? Math.min(15, elapsedSeconds * 3)
+      : Math.min(95, Math.round((steps.length / estimatedTotalSteps) * 90) + 5);
+  const elapsedLabel =
+    elapsedSeconds < 60 ? `${elapsedSeconds}s` : `${Math.floor(elapsedSeconds / 60)}m ${elapsedSeconds % 60}s`;
 
   return (
-    <Frame>
-      <Header
-        title={variantName ? `Creating: ${variantName}` : title}
-        subtitle="Please wait..."
-      />
-
-      <Divider />
-
+    <ScreenLayout
+      title={variantName ? `Creating: ${variantName}` : title}
+      subtitle="Please wait..."
+      hints={['Please keep this window open']}
+    >
       <Box flexDirection="column" marginY={1}>
         <Box marginBottom={1}>
           <ProgressBar percent={progress} />
@@ -66,18 +60,8 @@ export const ProgressScreen: React.FC<ProgressScreenProps> = ({
           {lines.length > 0 ? `Steps: ${lines.length}` : 'Initializing...'} · Elapsed: {elapsedLabel}
         </Text>
 
-        {steps.length > 0 ? (
-          <StepList steps={steps} />
-        ) : (
-          <Spinner label="Initializing..." />
-        )}
+        {steps.length > 0 ? <StepList steps={steps} /> : <Spinner label="Initializing..." />}
       </Box>
-
-      <Divider />
-
-      <Text color={colors.textMuted} dimColor>
-        Please keep this window open
-      </Text>
-    </Frame>
+    </ScreenLayout>
   );
 };

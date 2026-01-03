@@ -1,13 +1,18 @@
 /**
  * Completion/Success Screen
+ *
+ * Enhanced with celebration art, haikus, and personality.
  */
 
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useRef } from 'react';
 import { Box, Text, useStdout } from 'ink';
-import { Frame, Divider, HintBar } from '../components/ui/Layout.js';
+import { ScreenLayout } from '../components/ui/ScreenLayout.js';
 import { Code, SummaryRow } from '../components/ui/Typography.js';
 import { SelectMenu } from '../components/ui/Menu.js';
+import { CelebrationCheckmark, CelebrationDivider, HaikuDisplay } from '../components/ui/AsciiArt.js';
 import { colors, icons } from '../components/ui/theme.js';
+import { getRandomHaiku, type HaikuLines } from '../content/haikus.js';
+import { getMilestoneMessage, isLateNight, LATE_NIGHT_MESSAGE } from '../content/easter-eggs.js';
 import type { MenuItem } from '../components/ui/types.js';
 
 interface CompletionScreenProps {
@@ -20,8 +25,8 @@ interface CompletionScreenProps {
   wrapperPath?: string;
   configPath?: string;
   variantPath?: string;
-  shareUrl?: string;
-  shareStatus?: string | null;
+  providerKey?: string;
+  variantCount?: number;
   onDone: (value: string) => void;
 }
 
@@ -29,18 +34,25 @@ export const CompletionScreen: React.FC<CompletionScreenProps> = ({
   title,
   lines,
   summary,
-  nextSteps,
-  help,
+  nextSteps: _nextSteps,
+  help: _help,
   variantName,
   wrapperPath,
   configPath,
-  variantPath,
-  shareUrl,
-  shareStatus,
+  variantPath: _variantPath,
+  providerKey,
+  variantCount,
   onDone,
 }) => {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const { stdout } = useStdout();
+
+  // Generate haiku once and keep it stable across re-renders
+  const haikuRef = useRef<HaikuLines>(getRandomHaiku(providerKey));
+
+  // Check for special messages
+  const milestoneMessage = variantCount ? getMilestoneMessage(variantCount) : null;
+  const lateNightActive = isLateNight();
 
   const wrapText = (text: string, width: number) => {
     if (text.length <= width) return [text];
@@ -70,27 +82,30 @@ export const CompletionScreen: React.FC<CompletionScreenProps> = ({
     return Math.min(columns - 10, 72);
   }, [stdout?.columns]);
 
-
   const actions: MenuItem[] = [
     { value: 'home', label: 'Back to Home' },
-    ...(shareUrl ? [{ value: 'share', label: 'Share on X', icon: 'star' } as MenuItem] : []),
     { value: 'exit', label: 'Exit', icon: 'exit' },
   ];
 
+  const subtitleText = variantName ? `Variant "${variantName}" created` : title;
+
   return (
-    <Frame borderColor={colors.success}>
-      <Box marginBottom={1}>
-        <Text color={colors.success} bold>{icons.check} </Text>
-        <Text color={colors.gold} bold>Success!</Text>
-      </Box>
-      <Text color={colors.textMuted}>{variantName ? `Variant "${variantName}" created` : title}</Text>
-      {shareStatus && (
-        <Box marginTop={1}>
-          <Text color={colors.textMuted}>{shareStatus}</Text>
+    <ScreenLayout title={`${icons.check} Success!`} subtitle={subtitleText} borderColor={colors.success} icon={null}>
+      {/* Celebration Header */}
+      <CelebrationCheckmark />
+      <CelebrationDivider />
+
+      {/* Milestone or late night message */}
+      {milestoneMessage && (
+        <Box justifyContent="center" marginY={1}>
+          <Text color={colors.gold}>{milestoneMessage}</Text>
         </Box>
       )}
-
-      <Divider />
+      {lateNightActive && !milestoneMessage && (
+        <Box justifyContent="center" marginY={1}>
+          <Text color={colors.textMuted}>{LATE_NIGHT_MESSAGE}</Text>
+        </Box>
+      )}
 
       <Box flexDirection="column" marginY={1}>
         {variantName && (
@@ -102,22 +117,25 @@ export const CompletionScreen: React.FC<CompletionScreenProps> = ({
           </Box>
         )}
 
-        {(wrapperPath || configPath || variantPath) && (
+        {(wrapperPath || configPath) && (
           <Box flexDirection="column" marginTop={1}>
-            <Text color={colors.textMuted} bold>Paths:</Text>
+            <Text color={colors.textMuted} bold>
+              Paths:
+            </Text>
             <Box flexDirection="column" marginLeft={2}>
               {wrapperPath && <SummaryRow label="Wrapper" value={wrapperPath} />}
               {configPath && <SummaryRow label="Config" value={configPath} />}
-              {variantPath && <SummaryRow label="Root" value={variantPath} />}
             </Box>
           </Box>
         )}
 
         {summary && summary.length > 0 && (
           <Box flexDirection="column" marginTop={1}>
-            <Text color={colors.textMuted} bold>What we did</Text>
+            <Text color={colors.gold} bold>
+              {icons.star} What we built together
+            </Text>
             <Box flexDirection="column" marginLeft={2}>
-              {summary.flatMap((line, idx) => {
+              {summary.slice(0, 5).flatMap((line, idx) => {
                 const wrapped = wrapText(line, maxWidth - 4);
                 return wrapped.map((part, partIdx) => (
                   <Text key={`${idx}-${partIdx}`} color={colors.textMuted}>
@@ -134,57 +152,21 @@ export const CompletionScreen: React.FC<CompletionScreenProps> = ({
             {lines.flatMap((line, idx) => {
               const wrapped = wrapText(line, maxWidth);
               return wrapped.map((part, partIdx) => (
-                <Text key={`${idx}-${partIdx}`} color={colors.textMuted}>{part}</Text>
+                <Text key={`${idx}-${partIdx}`} color={colors.textMuted}>
+                  {part}
+                </Text>
               ));
             })}
           </Box>
         )}
-
-        {nextSteps && nextSteps.length > 0 && (
-          <Box flexDirection="column" marginTop={1}>
-            <Text color={colors.textMuted} bold>Next steps</Text>
-            <Box flexDirection="column" marginLeft={2}>
-              {nextSteps.flatMap((line, idx) => {
-                const wrapped = wrapText(line, maxWidth - 4);
-                return wrapped.map((part, partIdx) => (
-                  <Text key={`${idx}-${partIdx}`} color={colors.textMuted}>
-                    {partIdx === 0 ? `• ${part}` : `  ${part}`}
-                  </Text>
-                ));
-              })}
-            </Box>
-          </Box>
-        )}
-
-        {help && help.length > 0 && (
-          <Box flexDirection="column" marginTop={1}>
-            <Text color={colors.textMuted} bold>Help</Text>
-            <Box flexDirection="column" marginLeft={2}>
-              {help.flatMap((line, idx) => {
-                const wrapped = wrapText(line, maxWidth - 4);
-                return wrapped.map((part, partIdx) => (
-                  <Text key={`${idx}-${partIdx}`} color={colors.textMuted}>
-                    {partIdx === 0 ? `• ${part}` : `  ${part}`}
-                  </Text>
-                ));
-              })}
-            </Box>
-          </Box>
-        )}
       </Box>
 
-      <Divider />
+      {/* Haiku for variant creation */}
+      {variantName && <HaikuDisplay lines={haikuRef.current} />}
 
       <Box marginY={1}>
-        <SelectMenu
-          items={actions}
-          selectedIndex={selectedIndex}
-          onIndexChange={setSelectedIndex}
-          onSelect={onDone}
-        />
+        <SelectMenu items={actions} selectedIndex={selectedIndex} onIndexChange={setSelectedIndex} onSelect={onDone} />
       </Box>
-
-      <HintBar />
-    </Frame>
+    </ScreenLayout>
   );
 };

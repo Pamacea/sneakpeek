@@ -35,9 +35,7 @@ const mix = (hexA: string, hexB: string, weight: number) => {
   const a = hexToRgb(hexA);
   const b = hexToRgb(hexB);
   const w = Math.max(0, Math.min(1, weight));
-  return `rgb(${clamp(a.r + (b.r - a.r) * w)},${clamp(a.g + (b.g - a.g) * w)},${clamp(
-    a.b + (b.b - a.b) * w
-  )})`;
+  return `rgb(${clamp(a.r + (b.r - a.r) * w)},${clamp(a.g + (b.g - a.g) * w)},${clamp(a.b + (b.b - a.b) * w)})`;
 };
 
 const lighten = (hex: string, weight: number) => mix(hex, '#ffffff', weight);
@@ -52,10 +50,10 @@ const palette = {
   textMuted: '#475569',
   textDim: '#6b7280',
   // Teal/cyan palette matching ASCII art colors
-  teal: '#00a896',      // Primary teal (matches ANSI 43)
+  teal: '#00a896', // Primary teal (matches ANSI 43)
   tealBright: '#00d4aa', // Bright teal (matches ANSI 49)
-  tealDeep: '#008080',   // Deep teal (matches ANSI 37)
-  tealMuted: '#5fb3a8',  // Softer teal for accents
+  tealDeep: '#008080', // Deep teal (matches ANSI 37)
+  tealMuted: '#5fb3a8', // Softer teal for accents
   cyan: '#20b2aa',
   green: '#2f9b6d',
   red: '#d04b5a',

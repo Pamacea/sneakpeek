@@ -26,7 +26,7 @@ const renderHomeScreen = async () => {
       initialBinDir: '~/.local/bin',
     })
   );
-  await new Promise(resolve => setTimeout(resolve, 30));
+  await new Promise((resolve) => setTimeout(resolve, 30));
   const frame = app.lastFrame() || '';
   app.unmount();
   return stripAnsi(frame).split('\n');
@@ -36,7 +36,7 @@ const buildSvg = (lines: string[]) => {
   const padding = 24;
   const lineHeight = 18;
   const charWidth = 8;
-  const maxLen = Math.max(...lines.map(line => line.length), 0);
+  const maxLen = Math.max(...lines.map((line) => line.length), 0);
   const width = maxLen * charWidth + padding * 2;
   const height = lines.length * lineHeight + padding * 2;
   const bg = '#0b0c0f';
@@ -67,7 +67,7 @@ const main = async () => {
   console.log(`Wrote ${target}`);
 };
 
-main().catch(error => {
+main().catch((error) => {
   console.error(error);
   process.exit(1);
 });

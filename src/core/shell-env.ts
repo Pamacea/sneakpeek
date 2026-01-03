@@ -53,8 +53,7 @@ const readSettingsApiKey = (configDir: string): string | null => {
   return normalizeApiKey(key);
 };
 
-const renderBlock = (apiKey: string) =>
-  `${BLOCK_START}\nexport Z_AI_API_KEY="${apiKey}"\n${BLOCK_END}\n`;
+const renderBlock = (apiKey: string) => `${BLOCK_START}\nexport Z_AI_API_KEY="${apiKey}"\n${BLOCK_END}\n`;
 
 const upsertBlock = (content: string, block: string) => {
   if (content.includes(BLOCK_START) && content.includes(BLOCK_END)) {
@@ -77,10 +76,7 @@ const hasZaiKeyInProfile = (content: string): boolean => {
     const equalsIndex = exportStripped.indexOf('=');
     if (equalsIndex === -1) continue;
     let value = exportStripped.slice(equalsIndex + 1).trim();
-    if (
-      (value.startsWith('"') && value.endsWith('"')) ||
-      (value.startsWith("'") && value.endsWith("'"))
-    ) {
+    if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
       value = value.slice(1, -1);
     }
     if (normalizeApiKey(value)) return true;

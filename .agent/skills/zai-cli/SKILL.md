@@ -25,17 +25,17 @@ Get a key at: https://z.ai/manage-apikey/apikey-list
 
 ## Commands
 
-| Command | Purpose | Help |
-|---------|---------|------|
-| vision | Analyze images, screenshots, videos | `--help` for 8 subcommands |
-| search | Real-time web search | `--help` for filtering options |
-| read | Fetch web pages as markdown | `--help` for format options |
-| repo | GitHub code search and reading | `--help` for tree/search/read |
-| tools | List available MCP tools | |
-| tool | Show tool schema | |
-| call | Raw MCP tool invocation | |
-| code | TypeScript tool chaining | |
-| doctor | Check setup and connectivity | |
+| Command | Purpose                             | Help                           |
+| ------- | ----------------------------------- | ------------------------------ |
+| vision  | Analyze images, screenshots, videos | `--help` for 8 subcommands     |
+| search  | Real-time web search                | `--help` for filtering options |
+| read    | Fetch web pages as markdown         | `--help` for format options    |
+| repo    | GitHub code search and reading      | `--help` for tree/search/read  |
+| tools   | List available MCP tools            |                                |
+| tool    | Show tool schema                    |                                |
+| call    | Raw MCP tool invocation             |                                |
+| code    | TypeScript tool chaining            |                                |
+| doctor  | Check setup and connectivity        |                                |
 
 ## Quick Start
 

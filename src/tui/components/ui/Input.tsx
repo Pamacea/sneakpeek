@@ -20,26 +20,12 @@ interface TextFieldProps {
 /**
  * Text input field with label
  */
-export const TextField: React.FC<TextFieldProps> = ({
-  label,
-  value,
-  onChange,
-  onSubmit,
-  placeholder,
-  mask,
-  hint,
-}) => (
+export const TextField: React.FC<TextFieldProps> = ({ label, value, onChange, onSubmit, placeholder, mask, hint }) => (
   <Box flexDirection="column">
     <Text color={colors.textMuted}>{label}</Text>
     <Box marginTop={1}>
       <Text color={colors.primary}>{icons.pointer} </Text>
-      <TextInput
-        value={value}
-        onChange={onChange}
-        onSubmit={onSubmit}
-        placeholder={placeholder}
-        mask={mask}
-      />
+      <TextInput value={value} onChange={onChange} onSubmit={onSubmit} placeholder={placeholder} mask={mask} />
     </Box>
     {hint && (
       <Box marginTop={1}>
@@ -62,13 +48,7 @@ interface MaskedInputProps {
 /**
  * Masked input for sensitive data like API keys
  */
-export const MaskedInput: React.FC<MaskedInputProps> = ({
-  label,
-  envVarName,
-  value,
-  onChange,
-  onSubmit,
-}) => (
+export const MaskedInput: React.FC<MaskedInputProps> = ({ label, envVarName, value, onChange, onSubmit }) => (
   <Box flexDirection="column">
     <Text color={colors.textMuted}>{label}</Text>
     <Box marginTop={1}>
@@ -76,13 +56,7 @@ export const MaskedInput: React.FC<MaskedInputProps> = ({
     </Box>
     <Box marginTop={1}>
       <Text color={colors.primary}>{icons.pointer} </Text>
-      <TextInput
-        value={value}
-        onChange={onChange}
-        onSubmit={onSubmit}
-        mask="•"
-        placeholder="Enter key..."
-      />
+      <TextInput value={value} onChange={onChange} onSubmit={onSubmit} mask="•" placeholder="Enter key..." />
     </Box>
     <Box flexDirection="column" marginTop={2}>
       <Text color={colors.textMuted} dimColor>

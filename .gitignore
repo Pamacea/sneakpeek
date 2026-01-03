@@ -38,3 +38,6 @@ temp/
 
 # LiteLLM config files
 litellm-*.yaml
+
+# Internal development notes
+notes/

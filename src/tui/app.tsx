@@ -1,43 +1,57 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { Box, Text, useInput } from 'ink';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { Box, Text, useApp, useInput } from 'ink';
 import SelectInput from 'ink-select-input';
 import path from 'node:path';
 import type { BrandPreset } from '../brands/index.js';
 import * as defaultBrands from '../brands/index.js';
 import type { ProviderEnv, ProviderTemplate } from '../providers/index.js';
-import type { CreateVariantResult, DoctorReportItem, UpdateVariantResult, VariantEntry, VariantMeta } from '../core/types.js';
+import type {
+  CreateVariantResult,
+  DoctorReportItem,
+  UpdateVariantResult,
+  VariantEntry,
+  VariantMeta,
+} from '../core/types.js';
 import * as defaultCore from '../core/index.js';
 import * as defaultProviders from '../providers/index.js';
-import { openUrl } from '../core/open-url.js';
+// State management and router modules (available for future refactoring)
+// import { useCreateAppState, getProviderDefaults, resolveZaiApiKey } from './state/index.js';
+// import { useEscapeNavigation } from './router/index.js';
+
+// Business logic hooks
+import {
+  useVariantCreate,
+  useVariantUpdate,
+  useUpdateAll,
+  useModelConfig,
+  type CompletionResult,
+} from './hooks/index.js';
 
 // Import clean screen components
 import {
   HomeScreen,
   ProviderSelectScreen,
+  ProviderIntroScreen,
   ApiKeyScreen,
+  RouterUrlScreen,
   SummaryScreen,
   ProgressScreen,
   CompletionScreen,
   VariantListScreen,
   VariantActionsScreen,
   DiagnosticsScreen,
+  ModelConfigScreen,
+  EnvEditorScreen,
+  AboutScreen,
+  FeedbackScreen,
 } from './screens/index.js';
-
-// Import legacy components still needed
-import {
-  YesNoSelect,
-  EnvEditor,
-} from './components/screens.js';
 
 // Import UI components
 import { Frame, Divider, HintBar } from './components/ui/Layout.js';
-import { Header, SummaryRow } from './components/ui/Typography.js';
+import { YesNoSelect } from './components/ui/YesNoSelect.js';
+import { Header } from './components/ui/Typography.js';
 import { TextField } from './components/ui/Input.js';
-import { SimpleMenu } from './components/ui/Menu.js';
 import { colors } from './components/ui/theme.js';
-
-// Legacy common components
-import { Footer, InputStep, Section } from './components/common.js';
 
 export interface CoreModule {
   DEFAULT_ROOT: string;
@@ -184,6 +198,9 @@ export const App: React.FC<AppProps> = ({
   initialRootDir,
   initialBinDir,
 }: AppProps = {}) => {
+  // Exit handler from Ink
+  const { exit } = useApp();
+
   // No splash screen for clean UI
   const [screen, setScreen] = useState('home');
   const [providerKey, setProviderKey] = useState<string | null>(null);
@@ -194,11 +211,10 @@ export const App: React.FC<AppProps> = ({
   const [modelSonnet, setModelSonnet] = useState('');
   const [modelOpus, setModelOpus] = useState('');
   const [modelHaiku, setModelHaiku] = useState('');
-  const [rootDir, setRootDir] = useState(initialRootDir || core.DEFAULT_ROOT);
-  const [binDir, setBinDir] = useState(initialBinDir || core.DEFAULT_BIN_DIR);
+  const [rootDir, _setRootDir] = useState(initialRootDir || core.DEFAULT_ROOT);
+  const [binDir, _setBinDir] = useState(initialBinDir || core.DEFAULT_BIN_DIR);
   const [npmPackage, setNpmPackage] = useState(core.DEFAULT_NPM_PACKAGE || '@anthropic-ai/claude-code');
   const npmVersion = core.DEFAULT_NPM_VERSION || '2.0.76';
-  const [useTweak, setUseTweak] = useState(true);
   const [usePromptPack, setUsePromptPack] = useState(true);
   const [promptPackMode, setPromptPackMode] = useState<'minimal' | 'maximal'>('maximal');
   const [installSkill, setInstallSkill] = useState(true);
@@ -210,8 +226,6 @@ export const App: React.FC<AppProps> = ({
   const [completionSummary, setCompletionSummary] = useState<string[]>([]);
   const [completionNextSteps, setCompletionNextSteps] = useState<string[]>([]);
   const [completionHelp, setCompletionHelp] = useState<string[]>([]);
-  const [completionShareUrl, setCompletionShareUrl] = useState<string | null>(null);
-  const [shareStatus, setShareStatus] = useState<string | null>(null);
   const [variants, setVariants] = useState<VariantEntry[]>([]);
   const [selectedVariant, setSelectedVariant] = useState<(VariantMeta & { wrapperPath: string }) | null>(null);
   const [doctorReport, setDoctorReport] = useState<DoctorReportItem[]>([]);
@@ -220,14 +234,8 @@ export const App: React.FC<AppProps> = ({
   // Include experimental providers to show "Coming Soon" in UI
   const providerList = useMemo(() => providers.listProviders(true), [providers]);
   const brandList = useMemo(() => brands.listBrandPresets(), [brands]);
-  const provider = useMemo(
-    () => (providerKey ? providers.getProvider(providerKey) : null),
-    [providerKey, providers]
-  );
-  const effectiveBaseUrl = useMemo(
-    () => baseUrl || provider?.baseUrl || '',
-    [baseUrl, provider]
-  );
+  const provider = useMemo(() => (providerKey ? providers.getProvider(providerKey) : null), [providerKey, providers]);
+  const effectiveBaseUrl = useMemo(() => baseUrl || provider?.baseUrl || '', [baseUrl, provider]);
   const modelOverrides = useMemo(
     () => ({
       sonnet: modelSonnet.trim() || undefined,
@@ -237,7 +245,9 @@ export const App: React.FC<AppProps> = ({
     [modelSonnet, modelOpus, modelHaiku]
   );
 
-  const providerDefaults = (key?: string | null): {
+  const providerDefaults = (
+    key?: string | null
+  ): {
     promptPack: boolean;
     promptPackMode: 'minimal' | 'maximal';
     skillInstall: boolean;
@@ -273,47 +283,44 @@ export const App: React.FC<AppProps> = ({
           setScreen('exit');
           break;
         // Quick setup flow - back steps
-        case 'quick-api-key':
+        case 'quick-intro':
           setScreen('quick-provider');
           break;
-        case 'quick-model-opus':
+        case 'quick-ccrouter-url':
+          setScreen('quick-intro');
+          break;
+        case 'quick-api-key':
+          setScreen('quick-intro');
+          break;
+        case 'quick-models':
           setScreen('quick-api-key');
           break;
-        case 'quick-model-sonnet':
-          setScreen('quick-model-opus');
-          break;
-        case 'quick-model-haiku':
-          setScreen('quick-model-sonnet');
-          break;
         case 'quick-name':
-          setScreen(provider?.requiresModelMapping ? 'quick-model-haiku' : 'quick-api-key');
+          if (providerKey === 'ccrouter') {
+            setScreen('quick-ccrouter-url');
+          } else {
+            setScreen(provider?.requiresModelMapping ? 'quick-models' : 'quick-api-key');
+          }
           break;
         case 'quick-provider':
           setScreen('home');
           break;
-        case 'create-model-opus':
+        // Create flow - back steps
+        case 'create-intro':
+          setScreen('create-provider');
+          break;
+        case 'create-brand':
+          setScreen('create-intro');
+          break;
+        case 'create-ccrouter-url':
+          setScreen('create-name');
+          break;
+        case 'create-models':
           setScreen('create-api-key');
           break;
-        case 'create-model-sonnet':
-          setScreen('create-model-opus');
-          break;
-        case 'create-model-haiku':
-          setScreen('create-model-sonnet');
-          break;
-        // Settings - back to home
-        case 'settings-root':
-        case 'settings-bin':
-          setScreen('home');
-          break;
         // Model configuration screens - back through flow
-        case 'manage-models-opus':
+        case 'manage-models':
           setScreen('manage-actions');
-          break;
-        case 'manage-models-sonnet':
-          setScreen('manage-models-opus');
-          break;
-        case 'manage-models-haiku':
-          setScreen('manage-models-sonnet');
           break;
         case 'manage-models-done':
           setScreen('manage-actions');
@@ -328,6 +335,10 @@ export const App: React.FC<AppProps> = ({
           break;
         // Doctor screen - home
         case 'doctor':
+          setScreen('home');
+          break;
+        // Feedback screen - home
+        case 'feedback':
           setScreen('home');
           break;
         // Default: any screen starting with create, manage, or updateAll goes home
@@ -351,162 +362,76 @@ export const App: React.FC<AppProps> = ({
     setDoctorReport(core.doctor(rootDir, binDir));
   }, [screen, rootDir, binDir, core]);
 
-  useEffect(() => {
-    if (screen !== 'create-running') return;
-    let cancelled = false;
+  // Shared callback for hooks to set completion state
+  const handleOperationComplete = useCallback((result: CompletionResult) => {
+    setDoneLines(result.doneLines);
+    setCompletionSummary(result.summary);
+    setCompletionNextSteps(result.nextSteps);
+    setCompletionHelp(result.help);
+  }, []);
 
-    const runCreate = async () => {
-      try {
-        setProgressLines([]);
-        const params = {
-          name,
-          providerKey: providerKey || 'zai',
-          baseUrl: effectiveBaseUrl,
-          apiKey,
-          extraEnv,
-          modelOverrides,
-          brand: brandKey,
-          rootDir,
-          binDir,
-          npmPackage,
-          noTweak: !useTweak,
-          promptPack: usePromptPack,
-          promptPackMode,
-          skillInstall: installSkill,
-          shellEnv,
-          skillUpdate,
-          tweakccStdio: 'pipe' as const,
-          onProgress: (step: string) => setProgressLines(prev => [...prev, step]),
-        };
-        // Use async version if available for live progress updates
-        const result = core.createVariantAsync
-          ? await core.createVariantAsync(params)
-          : core.createVariant(params);
-        if (cancelled) return;
-        const wrapper = result.wrapperPath;
-        const providerLabel = provider?.label || providerKey || 'Provider';
-        const summary = [
-          `Provider: ${providerLabel}`,
-          `Install: npm ${npmPackage}@${npmVersion}`,
-          `Prompt pack: ${usePromptPack ? `on (${promptPackMode})` : 'off'}`,
-          `dev-browser skill: ${installSkill ? 'on' : 'off'}`,
-          ...(modelOverrides.sonnet || modelOverrides.opus || modelOverrides.haiku
-            ? [
-                `Models: sonnet=${modelOverrides.sonnet || '-'}, opus=${modelOverrides.opus || '-'}, haiku=${modelOverrides.haiku || '-'}`,
-              ]
-            : []),
-          ...(providerKey === 'zai' ? [`Shell env: ${shellEnv ? 'write Z_AI_API_KEY' : 'manual'}`] : []),
-          ...(result.notes || []),
-        ];
-        const nextSteps = [
-          `Run: ${name}`,
-          `Update: cc-mirror update ${name}`,
-          `Tweak: cc-mirror tweak ${name}`,
-          `Config: ${path.join(rootDir, name, 'config', 'settings.json')}`,
-        ];
-        const help = ['Help: cc-mirror help', 'List: cc-mirror list', 'Doctor: cc-mirror doctor'];
-        setCompletionSummary(summary);
-        setCompletionNextSteps(nextSteps);
-        setCompletionHelp(help);
-        setCompletionShareUrl(buildShareUrl(providerLabel, name, usePromptPack ? promptPackMode : undefined));
-        setShareStatus(null);
-        setDoneLines([
-          `Variant created: ${name}`,
-          `Wrapper: ${wrapper}`,
-          `Config: ${path.join(rootDir, name, 'config')}`,
-        ]);
-      } catch (error) {
-        if (cancelled) return;
-        const message = error instanceof Error ? error.message : String(error);
-        setDoneLines([`Failed: ${message}`]);
-        setCompletionSummary([]);
-        setCompletionNextSteps([]);
-        setCompletionHelp([]);
-        setCompletionShareUrl(null);
-        setShareStatus(null);
-      }
-      if (!cancelled) setScreen('create-done');
-    };
+  // Create variant operation (extracted to useVariantCreate hook)
+  const createParams = useMemo(
+    () => ({
+      name,
+      providerKey: providerKey || 'zai',
+      provider: provider ?? null,
+      baseUrl: effectiveBaseUrl,
+      apiKey,
+      extraEnv,
+      modelOverrides,
+      brandKey,
+      rootDir,
+      binDir,
+      npmPackage,
+      npmVersion,
+      usePromptPack,
+      promptPackMode,
+      installSkill,
+      shellEnv,
+      skillUpdate,
+    }),
+    [
+      name,
+      providerKey,
+      provider,
+      effectiveBaseUrl,
+      apiKey,
+      extraEnv,
+      modelOverrides,
+      brandKey,
+      rootDir,
+      binDir,
+      npmPackage,
+      npmVersion,
+      usePromptPack,
+      promptPackMode,
+      installSkill,
+      shellEnv,
+      skillUpdate,
+    ]
+  );
 
-    runCreate();
-    return () => { cancelled = true; };
-  }, [
+  useVariantCreate({
     screen,
-    name,
-    providerKey,
-    effectiveBaseUrl,
-    apiKey,
-    extraEnv,
-    modelOverrides,
-    brandKey,
+    params: createParams,
+    core,
+    setProgressLines,
+    setScreen,
+    onComplete: handleOperationComplete,
+  });
+
+  // Update variant operation (extracted to useVariantUpdate hook)
+  useVariantUpdate({
+    screen,
+    selectedVariant,
     rootDir,
     binDir,
-    npmPackage,
-    npmVersion,
-    useTweak,
-    usePromptPack,
-    promptPackMode,
-    installSkill,
-    shellEnv,
-    provider,
-    skillUpdate,
     core,
-  ]);
-
-  useEffect(() => {
-    if (screen !== 'manage-update') return;
-    if (!selectedVariant) return;
-    let cancelled = false;
-
-    const runUpdate = async () => {
-      try {
-        setProgressLines([]);
-        const opts = {
-          tweakccStdio: 'pipe' as const,
-          binDir,
-          onProgress: (step: string) => setProgressLines(prev => [...prev, step]),
-        };
-        // Use async version if available for live progress updates
-        const result = core.updateVariantAsync
-          ? await core.updateVariantAsync(rootDir, selectedVariant.name, opts)
-          : core.updateVariant(rootDir, selectedVariant.name, opts);
-        if (cancelled) return;
-        const meta = result.meta;
-        const summary = [
-          `Provider: ${meta.provider}`,
-          `Prompt pack: ${meta.promptPack ? `on (${meta.promptPackMode || 'maximal'})` : 'off'}`,
-          `dev-browser skill: ${meta.skillInstall ? 'on' : 'off'}`,
-          ...(meta.provider === 'zai' ? [`Shell env: ${meta.shellEnv ? 'write Z_AI_API_KEY' : 'manual'}`] : []),
-          ...(result.notes || []),
-        ];
-        const nextSteps = [
-          `Run: ${selectedVariant.name}`,
-          `Tweak: cc-mirror tweak ${selectedVariant.name}`,
-          `Config: ${path.join(rootDir, selectedVariant.name, 'config', 'settings.json')}`,
-        ];
-        const help = ['Help: cc-mirror help', 'List: cc-mirror list', 'Doctor: cc-mirror doctor'];
-        setCompletionSummary(summary);
-        setCompletionNextSteps(nextSteps);
-        setCompletionHelp(help);
-        setCompletionShareUrl(null);
-        setShareStatus(null);
-        setDoneLines([`Updated ${selectedVariant.name}`]);
-      } catch (error) {
-        if (cancelled) return;
-        const message = error instanceof Error ? error.message : String(error);
-        setDoneLines([`Failed: ${message}`]);
-        setCompletionSummary([]);
-        setCompletionNextSteps([]);
-        setCompletionHelp([]);
-        setCompletionShareUrl(null);
-        setShareStatus(null);
-      }
-      if (!cancelled) setScreen('manage-update-done');
-    };
-
-    runUpdate();
-    return () => { cancelled = true; };
-  }, [screen, selectedVariant, rootDir, binDir, core]);
+    setProgressLines,
+    setScreen,
+    onComplete: handleOperationComplete,
+  });
 
   useEffect(() => {
     if (screen !== 'manage-tweak') return;
@@ -515,129 +440,36 @@ export const App: React.FC<AppProps> = ({
     // Show user the command to run instead
     setDoneLines([`To customize ${selectedVariant.name}, run:`]);
     setCompletionSummary([`cc-mirror tweak ${selectedVariant.name}`]);
-    setCompletionNextSteps([
-      'Exit this TUI first (press ESC or q)',
-      'Then run the command above in your terminal',
-    ]);
+    setCompletionNextSteps(['Exit this TUI first (press ESC or q)', 'Then run the command above in your terminal']);
     setCompletionHelp(['tweakcc lets you customize themes, overlays, and more']);
-    setCompletionShareUrl(null);
-    setShareStatus(null);
     setScreen('manage-tweak-done');
   }, [screen, selectedVariant]);
 
-  // Save model configuration for existing variant
-  useEffect(() => {
-    if (screen !== 'manage-models-saving') return;
-    if (!selectedVariant) return;
-    let cancelled = false;
+  // Save model configuration operation (extracted to useModelConfig hook)
+  useModelConfig({
+    screen,
+    selectedVariant,
+    rootDir,
+    binDir,
+    modelOpus,
+    modelSonnet,
+    modelHaiku,
+    core,
+    setProgressLines,
+    setScreen,
+    onComplete: handleOperationComplete,
+  });
 
-    const saveModels = async () => {
-      try {
-        setProgressLines(['Saving model configuration...']);
-        const opts = {
-          tweakccStdio: 'pipe' as const,
-          binDir,
-          noTweak: true, // Don't re-run tweakcc, just update settings
-          modelOverrides: {
-            opus: modelOpus.trim() || undefined,
-            sonnet: modelSonnet.trim() || undefined,
-            haiku: modelHaiku.trim() || undefined,
-          },
-          onProgress: (step: string) => setProgressLines(prev => [...prev, step]),
-        };
-        // Use async version if available
-        if (core.updateVariantAsync) {
-          await core.updateVariantAsync(rootDir, selectedVariant.name, opts);
-        } else {
-          core.updateVariant(rootDir, selectedVariant.name, opts);
-        }
-        if (cancelled) return;
-        setDoneLines([`Updated model mapping for ${selectedVariant.name}`]);
-        setCompletionSummary([
-          `Opus: ${modelOpus.trim() || '(not set)'}`,
-          `Sonnet: ${modelSonnet.trim() || '(not set)'}`,
-          `Haiku: ${modelHaiku.trim() || '(not set)'}`,
-        ]);
-        setCompletionNextSteps([
-          `Run: ${selectedVariant.name}`,
-          'Models are saved in settings.json',
-        ]);
-        setCompletionHelp(['Use "Update" to refresh binary while keeping models']);
-        setCompletionShareUrl(null);
-        setShareStatus(null);
-      } catch (error) {
-        if (cancelled) return;
-        const message = error instanceof Error ? error.message : String(error);
-        setDoneLines([`Failed: ${message}`]);
-        setCompletionSummary([]);
-        setCompletionNextSteps([]);
-        setCompletionHelp([]);
-        setCompletionShareUrl(null);
-        setShareStatus(null);
-      }
-      if (!cancelled) setScreen('manage-models-done');
-    };
-
-    saveModels();
-    return () => { cancelled = true; };
-  }, [screen, selectedVariant, rootDir, binDir, modelOpus, modelSonnet, modelHaiku, core]);
-
-  useEffect(() => {
-    if (screen !== 'updateAll') return;
-    let cancelled = false;
-
-    const runUpdateAll = async () => {
-      const entries = core.listVariants(rootDir);
-      if (entries.length === 0) {
-        setDoneLines(['No variants found.']);
-        setCompletionSummary([]);
-        setCompletionNextSteps([]);
-        setCompletionHelp([]);
-        setCompletionShareUrl(null);
-        setShareStatus(null);
-        setScreen('updateAll-done');
-        return;
-      }
-      setProgressLines([]);
-      try {
-        for (const entry of entries) {
-          if (cancelled) return;
-          setProgressLines(prev => [...prev, `━━ ${entry.name} ━━`]);
-          const opts = {
-            tweakccStdio: 'pipe' as const,
-            binDir,
-            onProgress: (step: string) => setProgressLines(prev => [...prev, `  ${step}`]),
-          };
-          // Use async version if available for live progress updates
-          if (core.updateVariantAsync) {
-            await core.updateVariantAsync(rootDir, entry.name, opts);
-          } else {
-            core.updateVariant(rootDir, entry.name, opts);
-          }
-        }
-        if (cancelled) return;
-        setCompletionSummary([`Updated ${entries.length} variants.`]);
-        setCompletionNextSteps(['Run any variant by name', 'Use Manage Variants to inspect details']);
-        setCompletionHelp(['Help: cc-mirror help', 'List: cc-mirror list', 'Doctor: cc-mirror doctor']);
-        setCompletionShareUrl(null);
-        setShareStatus(null);
-        setDoneLines(['All variants updated.']);
-      } catch (error) {
-        if (cancelled) return;
-        const message = error instanceof Error ? error.message : String(error);
-        setDoneLines([`Failed: ${message}`]);
-        setCompletionSummary([]);
-        setCompletionNextSteps([]);
-        setCompletionHelp([]);
-        setCompletionShareUrl(null);
-        setShareStatus(null);
-      }
-      if (!cancelled) setScreen('updateAll-done');
-    };
-
-    runUpdateAll();
-    return () => { cancelled = true; };
-  }, [screen, rootDir, binDir, core]);
+  // Update all variants operation (extracted to useUpdateAll hook)
+  useUpdateAll({
+    screen,
+    rootDir,
+    binDir,
+    core,
+    setProgressLines,
+    setScreen,
+    onComplete: handleOperationComplete,
+  });
 
   const resetWizard = () => {
     setProviderKey(null);
@@ -651,7 +483,6 @@ export const App: React.FC<AppProps> = ({
     setApiKeyDetectedFrom(null);
     setNpmPackage(core.DEFAULT_NPM_PACKAGE || '@anthropic-ai/claude-code');
     setExtraEnv([]);
-    setUseTweak(true);
     setUsePromptPack(true);
     setPromptPackMode('maximal');
     setInstallSkill(true);
@@ -660,36 +491,16 @@ export const App: React.FC<AppProps> = ({
     setCompletionSummary([]);
     setCompletionNextSteps([]);
     setCompletionHelp([]);
-    setCompletionShareUrl(null);
-    setShareStatus(null);
   };
 
-  const envPreview = useMemo(() => {
-    if (!providerKey) return [];
-    const env = providers.buildEnv({
-      providerKey,
-      baseUrl: effectiveBaseUrl,
-      apiKey,
-      extraEnv,
-      modelOverrides,
-    });
-    return Object.entries(env).map(([key, value]) => `${key}=${value}`);
-  }, [providerKey, effectiveBaseUrl, apiKey, extraEnv, modelOverrides, providers]);
+  // Exit screen - actually exit the app after showing the message
+  useEffect(() => {
+    if (screen === 'exit') {
+      const timer = setTimeout(() => exit(), 100);
+      return () => clearTimeout(timer);
+    }
+  }, [screen, exit]);
 
-  const buildShareUrl = (label: string, variant: string, mode?: 'minimal' | 'maximal') => {
-    const lines = [
-      `Just set up ${label} with cc-mirror`,
-      mode ? `Prompt pack: ${mode}` : 'Prompt pack: enabled',
-      `CLI: ${variant}`,
-      'Get yours: npx cc-mirror',
-      '(Attach your TUI screenshot)',
-    ];
-    const url = new URL('https://x.com/intent/tweet');
-    url.searchParams.set('text', lines.join('\n'));
-    return url.toString();
-  };
-
-  // Exit screen
   if (screen === 'exit') {
     return (
       <Frame>
@@ -701,10 +512,9 @@ export const App: React.FC<AppProps> = ({
   if (screen === 'home') {
     return (
       <HomeScreen
-        onSelect={value => {
+        onSelect={(value) => {
           if (value === 'quick') {
             resetWizard();
-            setUseTweak(true);
             setScreen('quick-provider');
           }
           if (value === 'create') {
@@ -714,7 +524,8 @@ export const App: React.FC<AppProps> = ({
           if (value === 'manage') setScreen('manage');
           if (value === 'updateAll') setScreen('updateAll');
           if (value === 'doctor') setScreen('doctor');
-          if (value === 'settings') setScreen('settings-root');
+          if (value === 'about') setScreen('about');
+          if (value === 'feedback') setScreen('feedback');
           if (value === 'exit') setScreen('exit');
         }}
       />
@@ -725,11 +536,11 @@ export const App: React.FC<AppProps> = ({
     return (
       <ProviderSelectScreen
         providers={providerList}
-        onSelect={value => {
+        onSelect={(value) => {
           const selected = providers.getProvider(value);
           const defaults = providerDefaults(value);
-          const keyDefaults = value === 'zai' ? resolveZaiApiKey() : { value: '', detectedFrom: null, skipPrompt: false };
-          const requiresModels = Boolean(selected?.requiresModelMapping);
+          const keyDefaults =
+            value === 'zai' ? resolveZaiApiKey() : { value: '', detectedFrom: null, skipPrompt: false };
           setProviderKey(value);
           setName(value);
           setBaseUrl(selected?.baseUrl || '');
@@ -740,17 +551,36 @@ export const App: React.FC<AppProps> = ({
           setModelHaiku('');
           setExtraEnv([]);
           setBrandKey('auto');
-          setUseTweak(true);
           setUsePromptPack(defaults.promptPack);
           setPromptPackMode(defaults.promptPackMode);
           setInstallSkill(defaults.skillInstall);
           setShellEnv(keyDefaults.detectedFrom === 'Z_AI_API_KEY' ? false : defaults.shellEnv);
-          if (keyDefaults.skipPrompt) {
-            setScreen(requiresModels ? 'quick-model-opus' : 'quick-name');
+          setScreen('quick-intro');
+        }}
+      />
+    );
+  }
+
+  if (screen === 'quick-intro') {
+    const keyDefaults = providerKey === 'zai' ? resolveZaiApiKey() : { skipPrompt: false };
+    const requiresModels = Boolean(provider?.requiresModelMapping);
+    const skipApiKey = keyDefaults.skipPrompt || provider?.credentialOptional;
+    return (
+      <ProviderIntroScreen
+        providerKey={providerKey || 'zai'}
+        providerLabel={provider?.label || providerKey || 'Provider'}
+        isQuickSetup={true}
+        onContinue={() => {
+          // CCRouter: go to URL config screen
+          if (providerKey === 'ccrouter') {
+            setScreen('quick-ccrouter-url');
+          } else if (skipApiKey) {
+            setScreen(requiresModels ? 'quick-models' : 'quick-name');
           } else {
             setScreen('quick-api-key');
           }
         }}
+        onBack={() => setScreen('quick-provider')}
       />
     );
   }
@@ -763,91 +593,40 @@ export const App: React.FC<AppProps> = ({
         envVarName={provider?.authMode === 'authToken' ? 'ANTHROPIC_AUTH_TOKEN' : 'ANTHROPIC_API_KEY'}
         value={apiKey}
         onChange={setApiKey}
-        onSubmit={() =>
-          setScreen(provider?.requiresModelMapping ? 'quick-model-opus' : 'quick-name')
-        }
+        onSubmit={() => setScreen(provider?.requiresModelMapping ? 'quick-models' : 'quick-name')}
         detectedFrom={apiKeyDetectedFrom || undefined}
       />
     );
   }
 
-  // Model mapping screens - order: Opus -> Sonnet -> Haiku (most capable to least)
-  // These map Claude's internal model names to your provider's model identifiers
-  if (screen === 'quick-model-opus') {
+  // Consolidated model mapping screen for quick setup
+  if (screen === 'quick-models') {
     return (
-      <Frame>
-        <Header title="Model Mapping (1/3)" subtitle="Configure which models to use" />
-        <Divider />
-        <Box flexDirection="column" marginY={1}>
-          <Box marginBottom={1}>
-            <Text color={colors.textMuted}>
-              Claude Code uses model aliases like "opus", "sonnet", "haiku".{'\n'}
-              Map these to your provider's actual model names.
-            </Text>
-          </Box>
-          <TextField
-            label="Opus model (most capable)"
-            value={modelOpus}
-            onChange={setModelOpus}
-            onSubmit={() => {
-              if (!modelOpus.trim()) return;
-              setScreen('quick-model-sonnet');
-            }}
-            placeholder={providerKey === 'openrouter' ? 'anthropic/claude-3-opus' : 'deepseek,deepseek-reasoner'}
-            hint="Used for complex reasoning tasks"
-          />
-        </Box>
-        <Divider />
-        <HintBar />
-      </Frame>
+      <ModelConfigScreen
+        title="Model Configuration"
+        subtitle="Map Claude Code model aliases to your provider"
+        providerKey={providerKey || undefined}
+        opusValue={modelOpus}
+        sonnetValue={modelSonnet}
+        haikuValue={modelHaiku}
+        onOpusChange={setModelOpus}
+        onSonnetChange={setModelSonnet}
+        onHaikuChange={setModelHaiku}
+        onComplete={() => setScreen('quick-name')}
+        onBack={() => setScreen('quick-api-key')}
+      />
     );
   }
 
-  if (screen === 'quick-model-sonnet') {
+  // CCRouter URL configuration (quick setup)
+  if (screen === 'quick-ccrouter-url') {
     return (
-      <Frame>
-        <Header title="Model Mapping (2/3)" subtitle="Configure which models to use" />
-        <Divider />
-        <Box flexDirection="column" marginY={1}>
-          <TextField
-            label="Sonnet model (balanced)"
-            value={modelSonnet}
-            onChange={setModelSonnet}
-            onSubmit={() => {
-              if (!modelSonnet.trim()) return;
-              setScreen('quick-model-haiku');
-            }}
-            placeholder={providerKey === 'openrouter' ? 'anthropic/claude-3.5-sonnet' : 'deepseek,deepseek-chat'}
-            hint="Default model for most tasks"
-          />
-        </Box>
-        <Divider />
-        <HintBar />
-      </Frame>
-    );
-  }
-
-  if (screen === 'quick-model-haiku') {
-    return (
-      <Frame>
-        <Header title="Model Mapping (3/3)" subtitle="Configure which models to use" />
-        <Divider />
-        <Box flexDirection="column" marginY={1}>
-          <TextField
-            label="Haiku model (fastest)"
-            value={modelHaiku}
-            onChange={setModelHaiku}
-            onSubmit={() => {
-              if (!modelHaiku.trim()) return;
-              setScreen('quick-name');
-            }}
-            placeholder={providerKey === 'openrouter' ? 'anthropic/claude-3-haiku' : 'ollama,qwen2.5-coder:latest'}
-            hint="Used for quick tasks and subagents"
-          />
-        </Box>
-        <Divider />
-        <HintBar />
-      </Frame>
+      <RouterUrlScreen
+        value={baseUrl || provider?.baseUrl || 'http://127.0.0.1:3456'}
+        onChange={setBaseUrl}
+        onSubmit={() => setScreen('quick-name')}
+        onBack={() => setScreen('quick-intro')}
+      />
     );
   }
 
@@ -858,9 +637,7 @@ export const App: React.FC<AppProps> = ({
         <Divider />
         {apiKeyDetectedFrom && (
           <Box marginTop={1}>
-            <Text color={colors.success}>
-              Detected API key from {apiKeyDetectedFrom}.
-            </Text>
+            <Text color={colors.success}>Detected API key from {apiKeyDetectedFrom}.</Text>
           </Box>
         )}
         <Box marginY={1}>
@@ -882,54 +659,15 @@ export const App: React.FC<AppProps> = ({
     );
   }
 
-  if (screen === 'settings-root') {
-    return (
-      <Frame>
-        <Header title="Settings" subtitle="Configure default paths" />
-        <Divider />
-        <Box marginY={1}>
-          <TextField
-            label="Default variants root"
-            value={rootDir}
-            onChange={setRootDir}
-            onSubmit={() => setScreen('settings-bin')}
-            hint="Used by Manage/Update/Doctor screens"
-          />
-        </Box>
-        <Divider />
-        <HintBar />
-      </Frame>
-    );
-  }
-
-  if (screen === 'settings-bin') {
-    return (
-      <Frame>
-        <Header title="Settings" subtitle="Configure default paths" />
-        <Divider />
-        <Box marginY={1}>
-          <TextField
-            label="Default wrapper bin dir"
-            value={binDir}
-            onChange={setBinDir}
-            onSubmit={() => setScreen('home')}
-            hint="Used when installing or checking wrappers"
-          />
-        </Box>
-        <Divider />
-        <HintBar />
-      </Frame>
-    );
-  }
-
   if (screen === 'create-provider') {
     return (
       <ProviderSelectScreen
         providers={providerList}
-        onSelect={value => {
+        onSelect={(value) => {
           const selected = providers.getProvider(value);
           const defaults = providerDefaults(value);
-          const keyDefaults = value === 'zai' ? resolveZaiApiKey() : { value: '', detectedFrom: null, skipPrompt: false };
+          const keyDefaults =
+            value === 'zai' ? resolveZaiApiKey() : { value: '', detectedFrom: null, skipPrompt: false };
           setProviderKey(value);
           setName(value);
           setBaseUrl(selected?.baseUrl || '');
@@ -944,8 +682,20 @@ export const App: React.FC<AppProps> = ({
           setPromptPackMode(defaults.promptPackMode);
           setInstallSkill(defaults.skillInstall);
           setShellEnv(keyDefaults.detectedFrom === 'Z_AI_API_KEY' ? false : defaults.shellEnv);
-          setScreen('create-brand');
+          setScreen('create-intro');
         }}
+      />
+    );
+  }
+
+  if (screen === 'create-intro') {
+    return (
+      <ProviderIntroScreen
+        providerKey={providerKey || 'zai'}
+        providerLabel={provider?.label || providerKey || 'Provider'}
+        isQuickSetup={false}
+        onContinue={() => setScreen('create-brand')}
+        onBack={() => setScreen('create-provider')}
       />
     );
   }
@@ -954,62 +704,97 @@ export const App: React.FC<AppProps> = ({
     const items = [
       { label: 'Auto (match provider)', value: 'auto' },
       { label: 'None (keep default Claude Code look)', value: 'none' },
-      ...brandList.map(brand => ({
+      ...brandList.map((brand) => ({
         label: `${brand.label} - ${brand.description}`,
         value: brand.key,
       })),
     ];
     return (
-      <Box flexDirection="column">
-        <Header title="Choose a brand preset" subtitle="Optional: re-skin the UI with tweakcc presets." />
-        <Section title="Brand presets">
+      <Frame>
+        <Header title="Choose Theme" subtitle="Optional: re-skin the UI with tweakcc presets" />
+        <Divider />
+        <Box flexDirection="column" marginY={1}>
           <SelectInput
             items={items}
-            onSelect={item => {
+            onSelect={(item) => {
               setBrandKey(item.value as string);
               setScreen('create-name');
             }}
           />
-        </Section>
-        <Footer hint="Pick a style preset or press Esc to go back." />
-      </Box>
+        </Box>
+        <Divider />
+        <HintBar hints={['Pick a style preset or press Esc to go back']} />
+      </Frame>
     );
   }
 
   if (screen === 'create-name') {
+    // CCRouter goes to its own URL config screen
+    const nextScreen = providerKey === 'ccrouter' ? 'create-ccrouter-url' : 'create-base-url';
     return (
-      <InputStep
-        label="Variant name"
-        hint="This becomes the CLI command name."
-        value={name}
-        onChange={setName}
-        onSubmit={() => setScreen('create-base-url')}
+      <Frame>
+        <Header title="Variant Name" subtitle="This becomes the CLI command name" />
+        <Divider />
+        <Box marginY={1}>
+          <TextField
+            label="Command name"
+            value={name}
+            onChange={setName}
+            onSubmit={() => setScreen(nextScreen)}
+            placeholder={providerKey || 'my-variant'}
+            hint="Press Enter to continue"
+          />
+        </Box>
+        <Divider />
+        <HintBar />
+      </Frame>
+    );
+  }
+
+  // CCRouter URL configuration (full create flow)
+  if (screen === 'create-ccrouter-url') {
+    return (
+      <RouterUrlScreen
+        value={baseUrl || provider?.baseUrl || 'http://127.0.0.1:3456'}
+        onChange={setBaseUrl}
+        onSubmit={() => setScreen('create-skill-install')}
+        onBack={() => setScreen('create-name')}
       />
     );
   }
 
   if (screen === 'create-base-url') {
-    const skipApiKey = providerKey === 'zai' && apiKeyDetectedFrom === 'Z_AI_API_KEY';
+    // Skip API key for: zai with detected key, or any provider with credentialOptional
+    const skipApiKey = (providerKey === 'zai' && apiKeyDetectedFrom === 'Z_AI_API_KEY') || provider?.credentialOptional;
+    // Prompt packs only available for zai and minimax - skip yes/no, go straight to mode selection
+    const supportsPromptPack = providerKey === 'zai' || providerKey === 'minimax';
+    const nextScreen = supportsPromptPack ? 'create-prompt-pack-mode' : 'create-skill-install';
     return (
-      <InputStep
-        label="ANTHROPIC_BASE_URL"
-        hint="Leave blank to keep provider defaults."
-        value={baseUrl}
-        onChange={setBaseUrl}
-        onSubmit={() =>
-          setScreen(
-            skipApiKey
-              ? provider?.requiresModelMapping
-                ? 'create-model-sonnet'
-                : 'create-root'
-              : 'create-api-key'
-          )
-        }
-      />
+      <Frame>
+        <Header title="Base URL" subtitle="Custom API endpoint (optional)" />
+        <Divider />
+        <Box marginY={1}>
+          <TextField
+            label="ANTHROPIC_BASE_URL"
+            value={baseUrl}
+            onChange={setBaseUrl}
+            onSubmit={() =>
+              setScreen(skipApiKey ? (provider?.requiresModelMapping ? 'create-models' : nextScreen) : 'create-api-key')
+            }
+            placeholder={provider?.baseUrl || 'Leave blank for defaults'}
+            hint="Leave blank to keep provider defaults"
+          />
+        </Box>
+        <Divider />
+        <HintBar />
+      </Frame>
     );
   }
 
   if (screen === 'create-api-key') {
+    // Prompt packs only available for zai and minimax - skip yes/no, go straight to mode selection
+    const supportsPromptPack = providerKey === 'zai' || providerKey === 'minimax';
+    const nextScreen = supportsPromptPack ? 'create-prompt-pack-mode' : 'create-skill-install';
     return (
       <ApiKeyScreen
         providerLabel={provider?.label || 'Provider'}
@@ -1017,113 +802,42 @@ export const App: React.FC<AppProps> = ({
         envVarName={provider?.authMode === 'authToken' ? 'ANTHROPIC_AUTH_TOKEN' : 'ANTHROPIC_API_KEY'}
         value={apiKey}
         onChange={setApiKey}
-        onSubmit={() =>
-          setScreen(provider?.requiresModelMapping ? 'create-model-opus' : 'create-root')
-        }
+        onSubmit={() => setScreen(provider?.requiresModelMapping ? 'create-models' : nextScreen)}
         detectedFrom={apiKeyDetectedFrom || undefined}
       />
     );
   }
 
-  // Advanced create - model mapping (Opus -> Sonnet -> Haiku)
-  if (screen === 'create-model-opus') {
-    return (
-      <InputStep
-        label="Opus model (most capable)"
-        hint="For complex reasoning. Example: anthropic/claude-3-opus"
-        value={modelOpus}
-        onChange={setModelOpus}
-        onSubmit={() => {
-          if (!modelOpus.trim()) return;
-          setScreen('create-model-sonnet');
-        }}
-      />
-    );
-  }
-
-  if (screen === 'create-model-sonnet') {
-    return (
-      <InputStep
-        label="Sonnet model (balanced)"
-        hint="Default for most tasks. Example: anthropic/claude-3.5-sonnet"
-        value={modelSonnet}
-        onChange={setModelSonnet}
-        onSubmit={() => {
-          if (!modelSonnet.trim()) return;
-          setScreen('create-model-haiku');
-        }}
-      />
-    );
-  }
-
-  if (screen === 'create-model-haiku') {
-    return (
-      <InputStep
-        label="Haiku model (fastest)"
-        hint="For quick tasks and subagents. Example: anthropic/claude-3-haiku"
-        value={modelHaiku}
-        onChange={setModelHaiku}
-        onSubmit={() => {
-          if (!modelHaiku.trim()) return;
-          setScreen('create-root');
-        }}
-      />
-    );
-  }
-
-  if (screen === 'create-root') {
-    return (
-      <InputStep
-        label="Variants root directory"
-        hint="Default: ~/.cc-mirror"
-        value={rootDir}
-        onChange={setRootDir}
-        onSubmit={() => setScreen('create-bin')}
-      />
-    );
-  }
-
-  if (screen === 'create-bin') {
-    return (
-      <InputStep
-        label="Wrapper install directory"
-        hint="Default: ~/.local/bin"
-        value={binDir}
-        onChange={setBinDir}
-        onSubmit={() => setScreen('create-tweak')}
-      />
-    );
-  }
-
-  if (screen === 'create-tweak') {
-    // Prompt packs only available for zai and minimax
+  // Consolidated model mapping screen for create flow
+  if (screen === 'create-models') {
+    // Prompt packs only available for zai and minimax - skip yes/no, go straight to mode selection
     const supportsPromptPack = providerKey === 'zai' || providerKey === 'minimax';
+    const nextScreen = supportsPromptPack ? 'create-prompt-pack-mode' : 'create-skill-install';
     return (
-      <Box flexDirection="column">
-        <Header title="Apply tweakcc?" subtitle="tweakcc patches the binary copy safely." />
-        <YesNoSelect
-          title="Use tweakcc patches"
-          onSelect={value => {
-            setUseTweak(value);
-            if (!value || !supportsPromptPack) {
-              setUsePromptPack(false);
-              setScreen('create-skill-install');
-            } else {
-              setScreen('create-prompt-pack');
-            }
-          }}
-        />
-      </Box>
+      <ModelConfigScreen
+        title="Model Configuration"
+        subtitle="Map Claude Code model aliases to your provider"
+        providerKey={providerKey || undefined}
+        opusValue={modelOpus}
+        sonnetValue={modelSonnet}
+        haikuValue={modelHaiku}
+        onOpusChange={setModelOpus}
+        onSonnetChange={setModelSonnet}
+        onHaikuChange={setModelHaiku}
+        onComplete={() => setScreen(nextScreen)}
+        onBack={() => setScreen('create-api-key')}
+      />
     );
   }
 
   if (screen === 'create-prompt-pack') {
     return (
-      <Box flexDirection="column">
-        <Header title="Provider prompt pack" subtitle="Default-on provider hints for tools + behavior." />
+      <Frame>
+        <Header title="Prompt Pack" subtitle="Provider hints for tools and behavior" />
+        <Divider />
         <YesNoSelect
           title="Apply provider prompt pack?"
-          onSelect={value => {
+          onSelect={(value) => {
             setUsePromptPack(value);
             if (value) {
               setScreen('create-prompt-pack-mode');
@@ -1132,7 +846,9 @@ export const App: React.FC<AppProps> = ({
             }
           }}
         />
-      </Box>
+        <Divider />
+        <HintBar />
+      </Frame>
     );
   }
 
@@ -1142,33 +858,37 @@ export const App: React.FC<AppProps> = ({
       { label: 'Maximal (recommended)', value: 'maximal' },
     ];
     return (
-      <Box flexDirection="column">
-        <Header title="Prompt pack mode" subtitle="Minimal keeps tweaks small; maximal enables expert mode." />
-        <Section title="Mode">
+      <Frame>
+        <Header title="Prompt Pack Mode" subtitle="Minimal keeps it light, maximal enables expert mode" />
+        <Divider />
+        <Box flexDirection="column" marginY={1}>
           <SelectInput
             items={items}
             initialIndex={promptPackMode === 'minimal' ? 0 : 1}
-            onSelect={item => {
+            onSelect={(item) => {
               setPromptPackMode(item.value as 'minimal' | 'maximal');
               setScreen('create-skill-install');
             }}
           />
-        </Section>
-        <Footer hint="Select a prompt pack mode or press Esc to go back." />
-      </Box>
+        </Box>
+        <Divider />
+        <HintBar hints={['Select a mode or press Esc to go back']} />
+      </Frame>
     );
   }
 
   if (screen === 'create-skill-install') {
     return (
-      <Box flexDirection="column">
-        <Header
-          title="Install dev-browser skill"
-          subtitle="Adds the dev-browser skill to this variant's config (…/config/skills)."
-        />
+      <Frame>
+        <Header title="Browser Automation" subtitle="Navigate, fill forms, screenshot, scrape" />
+        <Divider />
+        <Box marginY={1} flexDirection="column">
+          <Text color={colors.textMuted}>The dev-browser skill adds browser automation to your variant.</Text>
+          <Text color={colors.primaryBright}>https://github.com/SawyerHood/dev-browser</Text>
+        </Box>
         <YesNoSelect
           title="Install dev-browser skill?"
-          onSelect={value => {
+          onSelect={(value) => {
             setInstallSkill(value);
             if (providerKey === 'zai') {
               if (apiKeyDetectedFrom === 'Z_AI_API_KEY') {
@@ -1182,35 +902,38 @@ export const App: React.FC<AppProps> = ({
             }
           }}
         />
-      </Box>
+        <Divider />
+        <HintBar />
+      </Frame>
     );
   }
 
   if (screen === 'create-shell-env') {
     return (
-      <Box flexDirection="column">
-        <Header
-          title="Set Z_AI_API_KEY"
-          subtitle="Optional: write to your shell profile for Z.ai CLI tools."
-        />
+      <Frame>
+        <Header title="Shell Environment" subtitle="Write API key to your shell profile" />
+        <Divider />
         <YesNoSelect
           title="Write Z_AI_API_KEY to your shell profile?"
-          onSelect={value => {
+          onSelect={(value) => {
             setShellEnv(value);
             setScreen('create-env-confirm');
           }}
         />
-      </Box>
+        <Divider />
+        <HintBar />
+      </Frame>
     );
   }
 
   if (screen === 'create-env-confirm') {
     return (
-      <Box flexDirection="column">
-        <Header title="Custom environment variables" subtitle="Optional extras beyond the template." />
+      <Frame>
+        <Header title="Custom Environment" subtitle="Optional extras beyond the template" />
+        <Divider />
         <YesNoSelect
           title="Add custom env entries?"
-          onSelect={value => {
+          onSelect={(value) => {
             if (value) {
               setScreen('create-env-add');
             } else {
@@ -1218,15 +941,17 @@ export const App: React.FC<AppProps> = ({
             }
           }}
         />
-      </Box>
+        <Divider />
+        <HintBar />
+      </Frame>
     );
   }
 
   if (screen === 'create-env-add') {
     return (
-      <EnvEditor
+      <EnvEditorScreen
         envEntries={extraEnv}
-        onAdd={entry => setExtraEnv(prev => [...prev, entry])}
+        onAdd={(entry) => setExtraEnv((prev) => [...prev, entry])}
         onDone={() => setScreen('create-summary')}
       />
     );
@@ -1234,13 +959,9 @@ export const App: React.FC<AppProps> = ({
 
   if (screen === 'create-summary') {
     const providerLabel = provider?.label || providerKey || '';
-    const brandPreset = brandList.find(item => item.key === brandKey);
+    const brandPreset = brandList.find((item) => item.key === brandKey);
     const brandLabel =
-      brandKey === 'auto'
-        ? 'Auto (match provider)'
-        : brandKey === 'none'
-          ? 'None'
-          : brandPreset?.label || brandKey;
+      brandKey === 'auto' ? 'Auto (match provider)' : brandKey === 'none' ? 'None' : brandPreset?.label || brandKey;
     return (
       <SummaryScreen
         data={{
@@ -1257,7 +978,6 @@ export const App: React.FC<AppProps> = ({
           binDir,
           npmPackage,
           npmVersion,
-          useTweak,
           usePromptPack,
           promptPackMode,
           installSkill,
@@ -1289,18 +1009,7 @@ export const App: React.FC<AppProps> = ({
         summary={completionSummary}
         nextSteps={completionNextSteps}
         help={completionHelp}
-        shareUrl={completionShareUrl || undefined}
-        shareStatus={shareStatus}
-        onDone={value => {
-          if (value === 'share' && completionShareUrl) {
-            const opened = openUrl(completionShareUrl);
-            setShareStatus(
-              opened
-                ? 'Opened X. Paste your TUI screenshot into the post.'
-                : `Could not open browser. Copy this URL: ${completionShareUrl}`
-            );
-            return;
-          }
+        onDone={(value) => {
           if (value === 'home') setScreen('home');
           else setScreen('exit');
         }}
@@ -1311,13 +1020,13 @@ export const App: React.FC<AppProps> = ({
   if (screen === 'manage') {
     return (
       <VariantListScreen
-        variants={variants.map(v => ({
+        variants={variants.map((v) => ({
           name: v.name,
           provider: v.meta?.provider,
           wrapperPath: path.join(binDir, v.name),
         }))}
-        onSelect={variantName => {
-          const entry = variants.find(item => item.name === variantName);
+        onSelect={(variantName) => {
+          const entry = variants.find((item) => item.name === variantName);
           if (!entry || !entry.meta) return;
           setSelectedVariant({ ...entry.meta, wrapperPath: path.join(binDir, entry.name) });
           setScreen('manage-actions');
@@ -1337,7 +1046,7 @@ export const App: React.FC<AppProps> = ({
           setModelOpus('');
           setModelSonnet('');
           setModelHaiku('');
-          setScreen('manage-models-opus');
+          setScreen('manage-models');
         }}
         onTweak={() => setScreen('manage-tweak')}
         onRemove={() => setScreen('manage-remove')}
@@ -1358,8 +1067,7 @@ export const App: React.FC<AppProps> = ({
         summary={completionSummary}
         nextSteps={completionNextSteps}
         help={completionHelp}
-        shareStatus={shareStatus}
-        onDone={value => {
+        onDone={(value) => {
           if (value === 'home') setScreen('home');
           else setScreen('exit');
         }}
@@ -1379,8 +1087,7 @@ export const App: React.FC<AppProps> = ({
         summary={completionSummary}
         nextSteps={completionNextSteps}
         help={completionHelp}
-        shareStatus={shareStatus}
-        onDone={value => {
+        onDone={(value) => {
           if (value === 'home') setScreen('home');
           else setScreen('exit');
         }}
@@ -1388,73 +1095,22 @@ export const App: React.FC<AppProps> = ({
     );
   }
 
-  // Model configuration screens for existing variants
-  if (screen === 'manage-models-opus' && selectedVariant) {
+  // Consolidated model configuration screen for existing variants
+  if (screen === 'manage-models' && selectedVariant) {
     return (
-      <Frame>
-        <Header title="Configure Models (1/3)" subtitle={`Update model mapping for ${selectedVariant.name}`} />
-        <Divider />
-        <Box flexDirection="column" marginY={1}>
-          <Box marginBottom={1}>
-            <Text color={colors.textMuted}>
-              Map Claude Code's model aliases to your provider's models.{'\n'}
-              These settings will be saved to the variant's configuration.
-            </Text>
-          </Box>
-          <TextField
-            label="Opus model (most capable)"
-            value={modelOpus}
-            onChange={setModelOpus}
-            onSubmit={() => setScreen('manage-models-sonnet')}
-            placeholder={selectedVariant.provider === 'openrouter' ? 'anthropic/claude-3-opus' : 'deepseek,deepseek-reasoner'}
-            hint="Used for complex reasoning tasks"
-          />
-        </Box>
-        <Divider />
-        <HintBar />
-      </Frame>
-    );
-  }
-
-  if (screen === 'manage-models-sonnet' && selectedVariant) {
-    return (
-      <Frame>
-        <Header title="Configure Models (2/3)" subtitle={`Update model mapping for ${selectedVariant.name}`} />
-        <Divider />
-        <Box flexDirection="column" marginY={1}>
-          <TextField
-            label="Sonnet model (balanced)"
-            value={modelSonnet}
-            onChange={setModelSonnet}
-            onSubmit={() => setScreen('manage-models-haiku')}
-            placeholder={selectedVariant.provider === 'openrouter' ? 'anthropic/claude-3.5-sonnet' : 'deepseek,deepseek-chat'}
-            hint="Default model for most tasks"
-          />
-        </Box>
-        <Divider />
-        <HintBar />
-      </Frame>
-    );
-  }
-
-  if (screen === 'manage-models-haiku' && selectedVariant) {
-    return (
-      <Frame>
-        <Header title="Configure Models (3/3)" subtitle={`Update model mapping for ${selectedVariant.name}`} />
-        <Divider />
-        <Box flexDirection="column" marginY={1}>
-          <TextField
-            label="Haiku model (fastest)"
-            value={modelHaiku}
-            onChange={setModelHaiku}
-            onSubmit={() => setScreen('manage-models-saving')}
-            placeholder={selectedVariant.provider === 'openrouter' ? 'anthropic/claude-3-haiku' : 'ollama,qwen2.5-coder:latest'}
-            hint="Used for quick tasks and subagents. Press Enter to save."
-          />
-        </Box>
-        <Divider />
-        <HintBar />
-      </Frame>
+      <ModelConfigScreen
+        title="Configure Models"
+        subtitle={`Update model mapping for ${selectedVariant.name}`}
+        providerKey={selectedVariant.provider}
+        opusValue={modelOpus}
+        sonnetValue={modelSonnet}
+        haikuValue={modelHaiku}
+        onOpusChange={setModelOpus}
+        onSonnetChange={setModelSonnet}
+        onHaikuChange={setModelHaiku}
+        onComplete={() => setScreen('manage-models-saving')}
+        onBack={() => setScreen('manage-actions')}
+      />
     );
   }
 
@@ -1470,8 +1126,7 @@ export const App: React.FC<AppProps> = ({
         summary={completionSummary}
         nextSteps={completionNextSteps}
         help={completionHelp}
-        shareStatus={shareStatus}
-        onDone={value => {
+        onDone={(value) => {
           if (value === 'home') setScreen('home');
           else setScreen('manage-actions');
         }}
@@ -1481,23 +1136,25 @@ export const App: React.FC<AppProps> = ({
 
   if (screen === 'manage-remove' && selectedVariant) {
     return (
-      <Box flexDirection="column">
-        <Header title="Remove variant" subtitle={`This will delete ${selectedVariant.name} from ${rootDir}`} />
-        <Section title="Confirm">
+      <Frame borderColor={colors.warning}>
+        <Header title="Remove Variant" subtitle={`This will delete ${selectedVariant.name} from ${rootDir}`} />
+        <Divider />
+        <Box flexDirection="column" marginY={1}>
           <SelectInput
             items={[
               { label: 'Remove', value: 'remove' },
               { label: 'Cancel', value: 'cancel' },
             ]}
-            onSelect={item => {
+            onSelect={(item) => {
               if (item.value === 'remove') {
                 try {
                   core.removeVariant(rootDir, selectedVariant.name);
                   setCompletionSummary([`Removed ${selectedVariant.name}`]);
-                  setCompletionNextSteps(['Use "Create" to make a new variant', 'Run "List" to see remaining variants']);
+                  setCompletionNextSteps([
+                    'Use "Create" to make a new variant',
+                    'Run "List" to see remaining variants',
+                  ]);
                   setCompletionHelp(['Help: cc-mirror help', 'List: cc-mirror list']);
-                  setCompletionShareUrl(null);
-                  setShareStatus(null);
                   setDoneLines([`Removed ${selectedVariant.name}`]);
                 } catch (error) {
                   const message = error instanceof Error ? error.message : String(error);
@@ -1505,8 +1162,6 @@ export const App: React.FC<AppProps> = ({
                   setCompletionSummary([]);
                   setCompletionNextSteps([]);
                   setCompletionHelp([]);
-                  setCompletionShareUrl(null);
-                  setShareStatus(null);
                 }
                 setScreen('manage-remove-done');
               } else {
@@ -1514,8 +1169,10 @@ export const App: React.FC<AppProps> = ({
               }
             }}
           />
-        </Section>
-      </Box>
+        </Box>
+        <Divider />
+        <HintBar hints={['Confirm removal or press Cancel']} />
+      </Frame>
     );
   }
 
@@ -1527,8 +1184,7 @@ export const App: React.FC<AppProps> = ({
         summary={completionSummary}
         nextSteps={completionNextSteps}
         help={completionHelp}
-        shareStatus={shareStatus}
-        onDone={value => {
+        onDone={(value) => {
           if (value === 'home') setScreen('home');
           else setScreen('exit');
         }}
@@ -1548,8 +1204,7 @@ export const App: React.FC<AppProps> = ({
         summary={completionSummary}
         nextSteps={completionNextSteps}
         help={completionHelp}
-        shareStatus={shareStatus}
-        onDone={value => {
+        onDone={(value) => {
           if (value === 'home') setScreen('home');
           else setScreen('exit');
         }}
@@ -1559,6 +1214,14 @@ export const App: React.FC<AppProps> = ({
 
   if (screen === 'doctor') {
     return <DiagnosticsScreen report={doctorReport} onDone={() => setScreen('home')} />;
+  }
+
+  if (screen === 'about') {
+    return <AboutScreen onBack={() => setScreen('home')} />;
+  }
+
+  if (screen === 'feedback') {
+    return <FeedbackScreen onBack={() => setScreen('home')} />;
   }
 
   return (

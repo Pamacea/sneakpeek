@@ -17,7 +17,9 @@ export const LogoBanner: React.FC = () => (
     <Text>
       <Text color={colors.logo1}>{'   ██████╗ ██████╗'}</Text>
       <Text color={colors.gold}>{'  ━━  '}</Text>
-      <Text color={colors.logo2} bold>{'M I R R O R'}</Text>
+      <Text color={colors.logo2} bold>
+        {'M I R R O R'}
+      </Text>
     </Text>
     <Text>
       <Text color={colors.logo1}>{'  ██╔════╝██╔════╝'}</Text>
@@ -44,11 +46,19 @@ export const LogoBanner: React.FC = () => (
  */
 export const LogoCompact: React.FC = () => (
   <Box>
-    <Text color={colors.logo1} bold>{'▓▓ '}</Text>
-    <Text color={colors.logo2} bold>CC</Text>
+    <Text color={colors.logo1} bold>
+      {'▓▓ '}
+    </Text>
+    <Text color={colors.logo2} bold>
+      CC
+    </Text>
     <Text color={colors.gold}>{'-'}</Text>
-    <Text color={colors.logo3} bold>MIRROR</Text>
-    <Text color={colors.logo1} bold>{' ▓▓'}</Text>
+    <Text color={colors.logo3} bold>
+      MIRROR
+    </Text>
+    <Text color={colors.logo1} bold>
+      {' ▓▓'}
+    </Text>
   </Box>
 );
 
@@ -57,10 +67,16 @@ export const LogoCompact: React.FC = () => (
  */
 export const LogoMinimal: React.FC = () => (
   <Box>
-    <Text color={colors.logo1} bold>{'◆ '}</Text>
-    <Text color={colors.logo2} bold>CC</Text>
+    <Text color={colors.logo1} bold>
+      {'◆ '}
+    </Text>
+    <Text color={colors.logo2} bold>
+      CC
+    </Text>
     <Text color={colors.gold}>{'-'}</Text>
-    <Text color={colors.logo3} bold>MIRROR</Text>
+    <Text color={colors.logo3} bold>
+      MIRROR
+    </Text>
   </Box>
 );
 
@@ -94,8 +110,12 @@ export const AccentLine: React.FC<{ width?: number }> = ({ width = 60 }) => (
  */
 export const AccentHeader: React.FC<{ title: string; icon?: string }> = ({ title, icon }) => (
   <Box marginBottom={1}>
-    <Text color={colors.gold} bold>{icon ? `${icon} ` : '◆ '}</Text>
-    <Text color={colors.textBright} bold>{title}</Text>
+    <Text color={colors.gold} bold>
+      {icon ? `${icon} ` : '◆ '}
+    </Text>
+    <Text color={colors.textBright} bold>
+      {title}
+    </Text>
   </Box>
 );
 
@@ -106,11 +126,11 @@ export const ScreenHeader: React.FC<{ title: string; subtitle?: string }> = ({ t
   <Box flexDirection="column" marginBottom={1}>
     <Box>
       <Text color={colors.gold}>{'╔══ '}</Text>
-      <Text color={colors.textBright} bold>{title}</Text>
+      <Text color={colors.textBright} bold>
+        {title}
+      </Text>
       <Text color={colors.gold}>{' ══╗'}</Text>
     </Box>
-    {subtitle && (
-      <Text color={colors.textMuted}>    {subtitle}</Text>
-    )}
+    {subtitle && <Text color={colors.textMuted}> {subtitle}</Text>}
   </Box>
 );

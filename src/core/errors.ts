@@ -15,11 +15,11 @@ export const formatTweakccFailure = (output: string) => {
 
   const lines = output
     .split(/\r?\n/)
-    .map(line => line.trim())
+    .map((line) => line.trim())
     .filter(Boolean);
   if (lines.length === 0) return 'tweakcc failed.';
 
-  const errorLine = lines.find(line => line.toLowerCase().startsWith('error:'));
+  const errorLine = lines.find((line) => line.toLowerCase().startsWith('error:'));
   if (errorLine) return errorLine;
 
   const tail = lines.slice(-3).join(' | ');

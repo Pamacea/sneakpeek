@@ -4,8 +4,8 @@
  * Uses ink's built-in Box with borderStyle for clean layouts.
  */
 
-import React, { type ReactNode, useMemo } from 'react';
-import { Box, Text, useStdout } from 'ink';
+import React, { type ReactNode } from 'react';
+import { Box, Text } from 'ink';
 import { colors, keyHints } from './theme.js';
 
 // Fixed dimensions to prevent box flickering/resizing
@@ -22,12 +22,7 @@ interface FrameProps {
 /**
  * Main application frame with rounded border and fixed dimensions
  */
-export const Frame: React.FC<FrameProps> = ({
-  children,
-  title,
-  borderColor = colors.border,
-  showFooter = true,
-}) => {
+export const Frame: React.FC<FrameProps> = ({ children, title, borderColor = colors.border, showFooter = true }) => {
   return (
     <Box
       flexDirection="column"
@@ -64,7 +59,9 @@ export const CreatorFooter: React.FC = () => (
       <Box flexDirection="column">
         <Box>
           <Text color={colors.textDim}>Created by </Text>
-          <Text color={colors.gold} bold>Numman Ali</Text>
+          <Text color={colors.gold} bold>
+            Numman Ali
+          </Text>
         </Box>
         <Text color={colors.textDim}>Want features? Get in touch!</Text>
       </Box>
@@ -85,11 +82,7 @@ interface SectionProps {
 /**
  * Section container with optional title
  */
-export const Section: React.FC<SectionProps> = ({
-  children,
-  title,
-  marginY = 1,
-}) => (
+export const Section: React.FC<SectionProps> = ({ children, title, marginY = 1 }) => (
   <Box flexDirection="column" marginY={marginY}>
     {title && (
       <Box marginBottom={1}>
@@ -110,10 +103,7 @@ interface DividerProps {
 /**
  * Horizontal divider line
  */
-export const Divider: React.FC<DividerProps> = ({
-  color = colors.border,
-  compact = false,
-}) => {
+export const Divider: React.FC<DividerProps> = ({ color = colors.border, compact = false }) => {
   const width = FRAME_WIDTH - 8; // Account for padding and border
 
   return (
@@ -130,13 +120,9 @@ interface HintBarProps {
 /**
  * Bottom hint bar showing keyboard shortcuts
  */
-export const HintBar: React.FC<HintBarProps> = ({
-  hints = [keyHints.navigate, keyHints.select, keyHints.back],
-}) => (
+export const HintBar: React.FC<HintBarProps> = ({ hints = [keyHints.navigate, keyHints.select, keyHints.back] }) => (
   <Box marginTop={1}>
-    <Text color={colors.textMuted}>
-      {hints.join('  •  ')}
-    </Text>
+    <Text color={colors.textMuted}>{hints.join('  •  ')}</Text>
   </Box>
 );
 
@@ -147,9 +133,7 @@ interface SpacerProps {
 /**
  * Vertical spacer
  */
-export const Spacer: React.FC<SpacerProps> = ({ size = 1 }) => (
-  <Box marginY={size} />
-);
+export const Spacer: React.FC<SpacerProps> = ({ size = 1 }) => <Box marginY={size} />;
 
 interface RowProps {
   children: ReactNode;
