@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.3] - 2025-01-03
+
+### Changed
+
+- Removed 5 unused dependencies: `gradient-string`, `ink-big-text`, `ink-box`, `ink-gradient`, `ink-spinner`
+- Production dependencies reduced from 10 to 5
+- Package tarball size reduced to 88.5 kB
+
+### Fixed
+
+- Fixed bin path to use relative path (`./dist/cc-mirror.mjs`)
+- Added missing `@eslint/js` dev dependency
+
+## [1.0.2] - 2025-01-03
+
+### Changed
+
+- Upgraded to Ink 6.6.0 and React 19
+- Updated all ink-* packages to latest versions
+- Fresh dependency tree with improved compatibility
+
 ## [1.0.1] - 2025-01-03
 
 ### Fixed

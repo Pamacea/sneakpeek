@@ -41,3 +41,6 @@ litellm-*.yaml
 
 # Internal development notes
 notes/
+
+# Agent skills (personal)
+.agent/

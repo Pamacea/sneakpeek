@@ -14,14 +14,9 @@ const external = [
   'react',
   'react-dom',
   'ink',
-  'ink-big-text',
-  'ink-box',
-  'ink-gradient',
   'ink-select-input',
-  'ink-spinner',
   'ink-text-input',
   // Other dependencies
-  'gradient-string',
   'tweakcc',
 ];
 
