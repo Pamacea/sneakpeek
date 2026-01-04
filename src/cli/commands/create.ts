@@ -150,6 +150,7 @@ async function handleQuickMode(opts: ParsedArgs, params: CreateParams): Promise<
     skillUpdate,
     modelOverrides: resolvedModelOverrides,
     enableTeamMode: Boolean(opts['enable-team-mode']),
+    tweakccStdio: 'pipe',
   });
 
   const modelNote = formatModelNote(resolvedModelOverrides);
@@ -230,6 +231,7 @@ async function handleInteractiveMode(opts: ParsedArgs, params: CreateParams): Pr
     skillUpdate,
     modelOverrides: resolvedModelOverrides,
     enableTeamMode: Boolean(opts['enable-team-mode']),
+    tweakccStdio: 'pipe',
   });
 
   const modelNote = formatModelNote(resolvedModelOverrides);
@@ -277,6 +279,7 @@ async function handleNonInteractiveMode(opts: ParsedArgs, params: CreateParams):
     skillUpdate,
     modelOverrides: resolvedModelOverrides,
     enableTeamMode: Boolean(opts['enable-team-mode']),
+    tweakccStdio: 'pipe',
   });
 
   const modelNote = formatModelNote(resolvedModelOverrides);
