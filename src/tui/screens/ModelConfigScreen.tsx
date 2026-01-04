@@ -159,12 +159,6 @@ export const ModelConfigScreen: React.FC<ModelConfigScreenProps> = ({
     }
   });
 
-  // Sync input buffer to parent on change
-  React.useEffect(() => {
-    setters[activeField](inputBuffer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [inputBuffer, activeField]);
-
   const allFilled = values.every((v) => v.trim());
 
   return (
