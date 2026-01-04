@@ -31,7 +31,7 @@ Claude Code is powerful, but locked to Anthropic's API. **CC-MIRROR** lets you:
 
 - **Use any provider** — Z.ai's GLM models, MiniMax-M2.1, OpenRouter's 100+ models, or route to local LLMs via Claude Code Router
 - **Keep variants isolated** — Each variant has its own config, sessions, and themes
-- **Switch instantly** — Run `zai` for Z.ai, `minimax` for MiniMax, `openrouter` for OpenRouter
+- **Launch variants instantly** — Run `zai` for Z.ai, `minimax` for MiniMax, `openrouter` for OpenRouter
 
 ## Features
 
