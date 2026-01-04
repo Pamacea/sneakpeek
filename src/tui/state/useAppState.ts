@@ -22,7 +22,8 @@ const defaultCompletion: CompletionData = {
 export function getProviderDefaults(key?: string | null): ProviderDefaults {
   return {
     promptPack: key === 'zai' || key === 'minimax',
-    promptPackMode: key === 'zai' || key === 'minimax' ? 'maximal' : 'minimal',
+    // promptPackMode is deprecated - always use 'minimal'
+    promptPackMode: 'minimal',
     skillInstall: key === 'zai' || key === 'minimax',
     shellEnv: key === 'zai',
   };
@@ -80,7 +81,9 @@ export function useCreateAppState(options: UseAppStateOptions): { state: AppStat
   // Feature flags
   const [useTweak, setUseTweak] = useState(true);
   const [usePromptPack, setUsePromptPack] = useState(true);
-  const [promptPackMode, setPromptPackMode] = useState<'minimal' | 'maximal'>('maximal');
+  // promptPackMode is deprecated - always 'minimal'
+  const promptPackMode = 'minimal' as const;
+  const setPromptPackMode = (_mode: 'minimal' | 'maximal') => {}; // no-op for backward compat
   const [installSkill, setInstallSkill] = useState(true);
   const [shellEnv, setShellEnv] = useState(true);
   const [skillUpdate, setSkillUpdate] = useState(false);
@@ -115,7 +118,7 @@ export function useCreateAppState(options: UseAppStateOptions): { state: AppStat
     setExtraEnv([]);
     setUseTweak(true);
     setUsePromptPack(true);
-    setPromptPackMode('maximal');
+    // promptPackMode is deprecated - no need to reset
     setInstallSkill(true);
     setShellEnv(true);
     setSkillUpdate(false);

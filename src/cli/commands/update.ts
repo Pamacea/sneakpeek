@@ -5,7 +5,7 @@
 import path from 'node:path';
 import * as core from '../../core/index.js';
 import type { ParsedArgs } from '../args.js';
-import { printSummary, parsePromptPackMode } from '../utils/index.js';
+import { printSummary } from '../utils/index.js';
 
 export interface UpdateCommandOptions {
   opts: ParsedArgs;
@@ -26,10 +26,11 @@ export function runUpdateCommand({ opts }: UpdateCommandOptions): void {
   }
 
   const promptPack = opts['no-prompt-pack'] ? false : undefined;
-  const promptPackMode = parsePromptPackMode(opts['prompt-pack-mode'] as string | undefined);
   const skillInstall = opts['no-skill-install'] ? false : undefined;
   const skillUpdate = Boolean(opts['skill-update']);
   const shellEnv = opts['no-shell-env'] ? false : opts['shell-env'] ? true : undefined;
+  const enableTeamMode = opts['enable-team-mode'] ? true : undefined;
+  const disableTeamMode = opts['disable-team-mode'] ? true : undefined;
 
   for (const name of names) {
     const result = core.updateVariant(rootDir, name, {
@@ -38,11 +39,11 @@ export function runUpdateCommand({ opts }: UpdateCommandOptions): void {
       brand: opts.brand as string | undefined,
       noTweak: Boolean(opts.noTweak),
       promptPack,
-      promptPackMode,
       skillInstall,
       shellEnv,
       skillUpdate,
-      enableTeamMode: Boolean(opts['enable-team-mode']),
+      enableTeamMode,
+      disableTeamMode,
     });
     const wrapperPath = path.join(binDir, name);
     printSummary({

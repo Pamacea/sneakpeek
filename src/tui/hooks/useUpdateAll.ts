@@ -3,7 +3,7 @@
  * Handles the updateAll screen business logic
  */
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import type { CoreModule } from '../app.js';
 import type { CompletionResult } from './types.js';
 import { buildHelpLines } from './useVariantCreate.js';
@@ -24,8 +24,14 @@ export interface UseUpdateAllOptions {
 export function useUpdateAll(options: UseUpdateAllOptions): void {
   const { screen, rootDir, binDir, core, setProgressLines, setScreen, onComplete } = options;
 
+  // Ref to prevent concurrent execution - persists across renders
+  const isRunningRef = useRef(false);
+
   useEffect(() => {
     if (screen !== 'updateAll') return;
+    // Prevent concurrent execution
+    if (isRunningRef.current) return;
+    isRunningRef.current = true;
     let cancelled = false;
 
     const runUpdateAll = async () => {
@@ -80,12 +86,16 @@ export function useUpdateAll(options: UseUpdateAllOptions): void {
           help: [],
         });
       }
-      if (!cancelled) setScreen('updateAll-done');
+      if (!cancelled) {
+        isRunningRef.current = false;
+        setScreen('updateAll-done');
+      }
     };
 
     runUpdateAll();
     return () => {
       cancelled = true;
+      isRunningRef.current = false;
     };
   }, [screen, rootDir, binDir, core, setProgressLines, setScreen, onComplete]);
 }

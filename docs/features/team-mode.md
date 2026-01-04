@@ -194,6 +194,30 @@ Milestone celebrations:
     └── domains/          # Domain-specific guidance (8 domains)
 ```
 
+---
+
+## 📦 Team Pack
+
+When team mode is enabled, cc-mirror also installs **Team Pack** — enhanced prompt files and toolset configuration.
+
+### What Team Pack Does
+
+1. **Copies prompt files** to `tweakcc/system-prompts/`:
+   - `tool-description-tasklist.md` - TaskList tool guidance
+   - `tool-description-taskupdate.md` - TaskUpdate tool guidance
+   - `agent-prompt-task-tool-extra-notes.md` - Task tool notes
+
+2. **Configures toolset** to block TodoWrite:
+   - Creates a 'team' toolset with `blockedTools: ['TodoWrite', ...]`
+   - Merges any provider-specific blocked tools (e.g., Z.ai's WebSearch)
+   - Sets 'team' as the default toolset
+
+### Why Block TodoWrite?
+
+Team mode provides `TaskCreate`, `TaskGet`, `TaskUpdate`, and `TaskList` as the primary task management tools. TodoWrite is blocked to encourage use of the more capable team tools for multi-agent coordination.
+
+---
+
 ### Managed vs User Skills
 
 cc-mirror marks its installed skill with a `.cc-mirror-managed` file. If you want to customize the orchestrator:

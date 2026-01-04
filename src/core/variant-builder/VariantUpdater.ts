@@ -37,9 +37,6 @@ const shouldEnablePromptPack = (providerKey: string) => {
   return providerKey === 'zai' || providerKey === 'minimax';
 };
 
-const defaultPromptPackMode = (providerKey: string): 'minimal' | 'maximal' =>
-  providerKey === 'zai' || providerKey === 'minimax' ? 'maximal' : 'minimal';
-
 const shouldInstallSkills = (providerKey: string) => providerKey === 'zai' || providerKey === 'minimax';
 
 const shouldEnableShellEnv = (providerKey: string) => providerKey === 'zai';
@@ -80,7 +77,6 @@ export class VariantUpdater {
     const resolvedNpmPackage = normalizeNpmPackage(opts.npmPackage ?? meta.npmPackage);
     const resolvedNpmVersion = normalizeNpmVersion();
     const promptPackPreference = opts.promptPack ?? meta.promptPack ?? shouldEnablePromptPack(meta.provider);
-    const promptPackModePreference = opts.promptPackMode ?? meta.promptPackMode ?? defaultPromptPackMode(meta.provider);
     const promptPackEnabled = !opts.noTweak && promptPackPreference;
     const skillInstallEnabled = opts.skillInstall ?? meta.skillInstall ?? shouldInstallSkills(meta.provider);
     const shellEnvEnabled = opts.shellEnv ?? meta.shellEnv ?? shouldEnableShellEnv(meta.provider);
@@ -98,7 +94,6 @@ export class VariantUpdater {
       resolvedNpmPackage,
       resolvedNpmVersion,
       promptPackPreference,
-      promptPackModePreference,
       promptPackEnabled,
       skillInstallEnabled,
       shellEnvEnabled,

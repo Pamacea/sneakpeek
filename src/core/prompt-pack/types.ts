@@ -1,5 +1,5 @@
 export type PromptPackKey = 'zai' | 'minimax';
-export type PromptPackMode = 'minimal' | 'maximal';
+export type PromptPackMode = 'minimal';
 
 export type OverlayKey =
   | 'main'

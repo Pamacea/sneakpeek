@@ -58,6 +58,7 @@ export interface MiscConfig {
 export interface Toolset {
   name: string;
   allowedTools: string[] | '*';
+  blockedTools?: string[];
 }
 
 export interface TweakccSettings {

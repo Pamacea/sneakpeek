@@ -52,14 +52,14 @@ export class TweakccUpdateStep implements UpdateStep {
     // Apply prompt pack if enabled
     if (prefs.promptPackEnabled) {
       if (isAsync) {
-        await ctx.report(`Applying prompt pack (${prefs.promptPackModePreference})...`);
+        await ctx.report('Applying prompt pack...');
       } else {
-        ctx.report(`Applying prompt pack (${prefs.promptPackModePreference})...`);
+        ctx.report('Applying prompt pack...');
       }
 
-      const packResult = applyPromptPack(meta.tweakDir, meta.provider, prefs.promptPackModePreference);
+      const packResult = applyPromptPack(meta.tweakDir, meta.provider);
       if (packResult.changed) {
-        state.notes.push(`Prompt pack applied (${packResult.mode}, ${packResult.updated.join(', ')})`);
+        state.notes.push(`Prompt pack applied (${packResult.updated.join(', ')})`);
 
         if (isAsync) {
           await ctx.report('Re-applying tweakcc...');

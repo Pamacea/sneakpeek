@@ -129,13 +129,13 @@ test('parsePromptPackMode returns minimal for minimal', () => {
   assert.equal(parsePromptPackMode('minimal'), 'minimal');
 });
 
-test('parsePromptPackMode returns maximal for maximal', () => {
-  assert.equal(parsePromptPackMode('maximal'), 'maximal');
+test('parsePromptPackMode returns undefined for deprecated maximal', () => {
+  // maximal is deprecated and no longer supported
+  assert.equal(parsePromptPackMode('maximal'), undefined);
 });
 
-test('parsePromptPackMode is case-insensitive', () => {
+test('parsePromptPackMode is case-insensitive for minimal', () => {
   assert.equal(parsePromptPackMode('MINIMAL'), 'minimal');
-  assert.equal(parsePromptPackMode('MAXIMAL'), 'maximal');
   assert.equal(parsePromptPackMode('Minimal'), 'minimal');
 });
 
@@ -219,7 +219,8 @@ test('printSummary prints prompt pack when enabled', () => {
       }),
     });
 
-    assert.ok(logs.some((line) => line.includes('Prompt pack: on (minimal)')));
+    // MiniMax shows MCP routing info
+    assert.ok(logs.some((line) => line.includes('Prompt pack: on (MCP routing)')));
   } finally {
     console.log = originalLog;
   }

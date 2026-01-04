@@ -37,7 +37,6 @@ export class FinalizeStep implements BuildStep {
       tweakDir: paths.tweakDir,
       brand: prefs.brandKey ?? undefined,
       promptPack: prefs.promptPackPreference,
-      promptPackMode: prefs.promptPackModePreference,
       skillInstall: prefs.skillInstallEnabled,
       shellEnv: prefs.shellEnvEnabled,
       binDir: paths.resolvedBin,

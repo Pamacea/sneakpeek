@@ -1,5 +1,3 @@
-import type { PromptPackMode } from './types.js';
-
 export const verbositySpec = `
 <output_verbosity_spec>
 - Default: 3-6 sentences or <=6 bullets.
@@ -8,13 +6,12 @@ export const verbositySpec = `
 </output_verbosity_spec>
 `.trim();
 
-export const operatingSpec = (mode: PromptPackMode) =>
+export const operatingSpec = () =>
   `
 <system_reminder>
 - Operate like an ambitious, senior engineer: proactive, high-ownership, and precise.
 - Prefer concrete outputs: commands, file paths, diffs, and validation steps.
 - Respect permissions and confirm before destructive actions.
-${mode === 'maximal' ? '- Parallelize independent work with Task/subagents when useful.' : ''}
 </system_reminder>
 `.trim();
 
@@ -25,4 +22,12 @@ export const subjectiveWorkSpec = `
 - For design or aesthetic work, ask about purpose, audience, style preferences, inspirations, constraints, and tech stack before generating.
 - When you catch yourself making assumptions about subjective quality, pause and ask instead.
 </subjective_work_guardrails>
+`.trim();
+
+export const skillClarificationSpec = `
+<skill_clarification>
+The examples in the Skill tool description (commit, review-pr, pdf) are illustrative only.
+IMPORTANT: Only skills listed in <available_skills> are actually installed in this variant.
+If a user asks for a skill not in <available_skills>, inform them it's not installed.
+</skill_clarification>
 `.trim();

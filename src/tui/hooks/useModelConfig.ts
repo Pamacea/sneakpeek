@@ -3,7 +3,7 @@
  * Handles the manage-models-saving screen business logic
  */
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import type { CoreModule } from '../app.js';
 import type { CompletionResult } from './types.js';
 import type { SelectedVariant } from './useVariantUpdate.js';
@@ -40,9 +40,15 @@ export function useModelConfig(options: UseModelConfigOptions): void {
     onComplete,
   } = options;
 
+  // Ref to prevent concurrent execution - persists across renders
+  const isRunningRef = useRef(false);
+
   useEffect(() => {
     if (screen !== 'manage-models-saving') return;
     if (!selectedVariant) return;
+    // Prevent concurrent execution
+    if (isRunningRef.current) return;
+    isRunningRef.current = true;
     let cancelled = false;
 
     const saveModels = async () => {
@@ -91,12 +97,16 @@ export function useModelConfig(options: UseModelConfigOptions): void {
           help: [],
         });
       }
-      if (!cancelled) setScreen('manage-models-done');
+      if (!cancelled) {
+        isRunningRef.current = false;
+        setScreen('manage-models-done');
+      }
     };
 
     saveModels();
     return () => {
       cancelled = true;
+      isRunningRef.current = false;
     };
   }, [
     screen,

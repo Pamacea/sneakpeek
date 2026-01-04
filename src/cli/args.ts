@@ -14,6 +14,7 @@ export interface ParsedArgs {
   ['shell-env']?: boolean;
   ['no-shell-env']?: boolean;
   ['enable-team-mode']?: boolean;
+  ['disable-team-mode']?: boolean;
   [key: string]: string | boolean | string[] | undefined;
 }
 

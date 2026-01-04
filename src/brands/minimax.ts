@@ -2,6 +2,14 @@ import type { TweakccConfig, Theme } from './types.js';
 import { DEFAULT_THEMES } from './defaultThemes.js';
 import { formatUserMessage, getUserLabel } from './userLabel.js';
 
+/**
+ * MiniMax blocked tools - builtin tools that should use MiniMax MCP instead
+ */
+export const MINIMAX_BLOCKED_TOOLS = [
+  // WebSearch should use mcp__MiniMax__web_search instead
+  'WebSearch',
+];
+
 type Rgb = { r: number; g: number; b: number };
 
 const clamp = (value: number) => Math.max(0, Math.min(255, Math.round(value)));
@@ -213,6 +221,7 @@ export const buildMinimaxTweakccConfig = (): TweakccConfig => ({
       {
         name: 'minimax',
         allowedTools: '*',
+        blockedTools: MINIMAX_BLOCKED_TOOLS,
       },
     ],
     defaultToolset: 'minimax',

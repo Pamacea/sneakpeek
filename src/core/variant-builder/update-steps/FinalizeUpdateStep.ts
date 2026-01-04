@@ -24,9 +24,11 @@ export class FinalizeUpdateStep implements UpdateStep {
 
     meta.updatedAt = new Date().toISOString();
     meta.promptPack = prefs.promptPackPreference;
-    meta.promptPackMode = prefs.promptPackModePreference;
     meta.skillInstall = prefs.skillInstallEnabled;
     meta.shellEnv = prefs.shellEnvEnabled;
+
+    // Remove deprecated promptPackMode if present
+    delete meta.promptPackMode;
 
     writeJson(path.join(paths.variantDir, 'variant.json'), meta);
   }

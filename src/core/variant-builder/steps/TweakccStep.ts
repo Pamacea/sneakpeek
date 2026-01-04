@@ -26,11 +26,11 @@ export class TweakccStep implements BuildStep {
     }
 
     if (prefs.promptPackEnabled) {
-      ctx.report(`Applying prompt pack (${prefs.promptPackModePreference})...`);
-      const packResult = applyPromptPack(paths.tweakDir, params.providerKey, prefs.promptPackModePreference);
+      ctx.report('Applying prompt pack...');
+      const packResult = applyPromptPack(paths.tweakDir, params.providerKey);
 
       if (packResult.changed) {
-        state.notes.push(`Prompt pack applied (${packResult.mode}, ${packResult.updated.join(', ')})`);
+        state.notes.push(`Prompt pack applied (${packResult.updated.join(', ')})`);
         ctx.report('Re-applying tweakcc...');
         const reapply = runTweakcc(paths.tweakDir, state.binaryPath, prefs.commandStdio);
         state.tweakResult = reapply;
@@ -59,11 +59,11 @@ export class TweakccStep implements BuildStep {
     }
 
     if (prefs.promptPackEnabled) {
-      await ctx.report(`Applying prompt pack (${prefs.promptPackModePreference})...`);
-      const packResult = applyPromptPack(paths.tweakDir, params.providerKey, prefs.promptPackModePreference);
+      await ctx.report('Applying prompt pack...');
+      const packResult = applyPromptPack(paths.tweakDir, params.providerKey);
 
       if (packResult.changed) {
-        state.notes.push(`Prompt pack applied (${packResult.mode}, ${packResult.updated.join(', ')})`);
+        state.notes.push(`Prompt pack applied (${packResult.updated.join(', ')})`);
         await ctx.report('Re-applying tweakcc...');
         const reapply = await runTweakccAsync(paths.tweakDir, state.binaryPath, prefs.commandStdio);
         state.tweakResult = reapply;

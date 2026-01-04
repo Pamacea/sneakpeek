@@ -32,14 +32,11 @@ test('sanitizeOverlayText removes backticks', () => {
 
 test('resolveOverlays strips backticks for providers', () => {
   const providers = ['zai', 'minimax'] as const;
-  const modes = ['minimal', 'maximal'] as const;
   for (const provider of providers) {
-    for (const mode of modes) {
-      const overlays = resolveOverlays(provider, mode);
-      for (const value of Object.values(overlays)) {
-        if (!value) continue;
-        assert.equal(value.includes('`'), false);
-      }
+    const overlays = resolveOverlays(provider);
+    for (const value of Object.values(overlays)) {
+      if (!value) continue;
+      assert.equal(value.includes('`'), false);
     }
   }
 });
@@ -49,10 +46,10 @@ test('applyPromptPack writes overlays and is idempotent', () => {
   const tweakDir = path.join(tempDir, 'tweakcc');
   const systemPromptsDir = writePromptFiles(tweakDir);
 
-  const overlays = resolveOverlays('zai', 'maximal');
+  const overlays = resolveOverlays('zai');
   const expectedUpdates = PROMPT_PACK_TARGETS.filter((target) => overlays[target.key]).length;
 
-  const first = applyPromptPack(tweakDir, 'zai', 'maximal');
+  const first = applyPromptPack(tweakDir, 'zai');
   assert.equal(first.changed, true);
   assert.equal(first.updated.length, expectedUpdates);
 
@@ -67,7 +64,7 @@ test('applyPromptPack writes overlays and is idempotent', () => {
   const overlayText = content.slice(start + OVERLAY_MARKERS.start.length, end);
   assert.equal(overlayText.includes('`'), false);
 
-  const second = applyPromptPack(tweakDir, 'zai', 'maximal');
+  const second = applyPromptPack(tweakDir, 'zai');
   assert.equal(second.changed, false);
   assert.equal(second.updated.length, 0);
 

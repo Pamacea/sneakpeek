@@ -33,7 +33,6 @@ export interface BuildPreferences {
   resolvedNpmPackage: string;
   resolvedNpmVersion: string;
   promptPackPreference: boolean;
-  promptPackModePreference: 'minimal' | 'maximal';
   promptPackEnabled: boolean;
   skillInstallEnabled: boolean;
   shellEnvEnabled: boolean;
@@ -124,7 +123,6 @@ export interface UpdatePreferences {
   resolvedNpmPackage: string;
   resolvedNpmVersion: string;
   promptPackPreference: boolean;
-  promptPackModePreference: 'minimal' | 'maximal';
   promptPackEnabled: boolean;
   skillInstallEnabled: boolean;
   shellEnvEnabled: boolean;

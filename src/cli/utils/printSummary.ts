@@ -14,6 +14,20 @@ export interface PrintSummaryOptions {
 export function printSummary(opts: PrintSummaryOptions): void {
   const { action, meta, wrapperPath, notes } = opts;
 
+  // Helper to get prompt pack description with provider-specific routing info
+  const getPromptPackDescription = (): string => {
+    if (!meta.promptPack) return 'off';
+    if (meta.provider === 'zai') return 'on (zai-cli routing)';
+    if (meta.provider === 'minimax') return 'on (MCP routing)';
+    return 'on';
+  };
+
+  // Helper to get team mode description
+  const getTeamModeDescription = (): string => {
+    if (!meta.teamModeEnabled) return 'off';
+    return 'on (orchestrator skill, TodoWrite blocked)';
+  };
+
   // Header
   console.log('');
   console.log(`✓ ${action}: ${meta.name}`);
@@ -21,11 +35,13 @@ export function printSummary(opts: PrintSummaryOptions): void {
 
   // Optional features
   if (meta.promptPack !== undefined) {
-    const mode = meta.promptPackMode || 'maximal';
-    console.log(`  Prompt pack: ${meta.promptPack ? `on (${mode})` : 'off'}`);
+    console.log(`  Prompt pack: ${getPromptPackDescription()}`);
   }
   if (meta.skillInstall !== undefined) {
     console.log(`  dev-browser skill: ${meta.skillInstall ? 'on' : 'off'}`);
+  }
+  if (meta.teamModeEnabled !== undefined) {
+    console.log(`  Team mode: ${getTeamModeDescription()}`);
   }
   if (meta.shellEnv !== undefined && meta.provider === 'zai') {
     console.log(`  Shell env: ${meta.shellEnv ? 'write Z_AI_API_KEY' : 'manual'}`);

@@ -66,7 +66,7 @@ export class BrandThemeStep implements BuildStep {
 
     // Add note if prompt pack is skipped
     if (params.noTweak && prefs.promptPackPreference) {
-      state.notes.push(`Prompt pack skipped (tweakcc disabled, ${prefs.promptPackModePreference}).`);
+      state.notes.push('Prompt pack skipped (tweakcc disabled).');
     }
   }
 }

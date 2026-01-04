@@ -32,9 +32,9 @@ export const PROVIDER_EDUCATION: Record<string, ProviderEducation> = {
     features: [
       'GLM-4.7 for Sonnet/Opus tasks',
       'GLM-4.5-Air for Haiku (fast) tasks',
-      'Full prompt pack support',
+      'Prompt pack with zai-cli routing',
       'Gold-themed interface',
-      'Shell environment integration',
+      'Optional team mode for multi-agent work',
     ],
     bestFor: "Heavy coding with GLM's reasoning capabilities",
     models: {
@@ -57,9 +57,10 @@ export const PROVIDER_EDUCATION: Record<string, ProviderEducation> = {
     tagline: 'Coral pulses, unified model',
     features: [
       'Single model for all tiers',
-      'Full prompt pack support',
-      'MCP tools for web & vision',
+      'Prompt pack with MCP tool routing',
+      'MCP tools for web search & vision',
       'Coral-themed interface',
+      'Optional team mode for multi-agent work',
     ],
     bestFor: 'Streamlined experience with one powerful model',
     models: {

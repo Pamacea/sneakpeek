@@ -13,6 +13,7 @@ import type { MenuItem } from '../components/ui/types.js';
 interface SummaryData {
   name: string;
   providerLabel: string;
+  providerKey?: string;
   brandLabel: string;
   baseUrl: string;
   apiKey: string;
@@ -27,6 +28,7 @@ interface SummaryData {
   usePromptPack: boolean;
   promptPackMode: 'minimal' | 'maximal';
   installSkill: boolean;
+  enableTeamMode: boolean;
   shellEnv: boolean;
 }
 
@@ -76,12 +78,26 @@ export const SummaryScreen: React.FC<SummaryScreenProps> = ({ data, onConfirm, o
       <Section title="Installation">
         <SummaryRow label="Package" value={data.npmPackage} />
         <SummaryRow label="Version" value={data.npmVersion} />
-        <SummaryRow label="Prompt pack" value={data.usePromptPack ? 'Yes' : 'No'} />
-        {data.usePromptPack && (
-          <SummaryRow label="Prompt mode" value={data.promptPackMode === 'maximal' ? 'Maximal' : 'Minimal'} />
+        <SummaryRow
+          label="Prompt pack"
+          value={
+            data.usePromptPack
+              ? data.providerKey === 'zai'
+                ? 'on (zai-cli routing)'
+                : data.providerKey === 'minimax'
+                  ? 'on (MCP routing)'
+                  : 'on'
+              : 'off'
+          }
+        />
+        <SummaryRow label="dev-browser skill" value={data.installSkill ? 'on' : 'off'} />
+        <SummaryRow
+          label="Team mode"
+          value={data.enableTeamMode ? 'on (orchestrator skill, TodoWrite blocked)' : 'off'}
+        />
+        {data.providerKey === 'zai' && (
+          <SummaryRow label="Shell env" value={data.shellEnv ? 'write Z_AI_API_KEY' : 'manual'} />
         )}
-        <SummaryRow label="dev-browser skill" value={data.installSkill ? 'Yes' : 'No'} />
-        <SummaryRow label="Shell env" value={data.shellEnv ? 'Yes' : 'No'} />
       </Section>
 
       <Section title="Paths">

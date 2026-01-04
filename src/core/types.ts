@@ -12,6 +12,7 @@ export interface VariantMeta {
   tweakDir: string;
   brand?: string;
   promptPack?: boolean;
+  /** @deprecated No longer used - promptPackMode has been deprecated */
   promptPackMode?: 'minimal' | 'maximal';
   skillInstall?: boolean;
   shellEnv?: boolean;
@@ -52,7 +53,6 @@ export interface CreateVariantParams {
   brand?: string;
   noTweak?: boolean;
   promptPack?: boolean;
-  promptPackMode?: 'minimal' | 'maximal';
   skillInstall?: boolean;
   shellEnv?: boolean;
   skillUpdate?: boolean;
@@ -71,7 +71,6 @@ export interface UpdateVariantOptions {
   /** Skip npm package reinstall - for settings-only updates (models, env) */
   settingsOnly?: boolean;
   promptPack?: boolean;
-  promptPackMode?: 'minimal' | 'maximal';
   skillInstall?: boolean;
   shellEnv?: boolean;
   skillUpdate?: boolean;

@@ -36,4 +36,5 @@ export const KEYS = {
   down: '\u001b[B',
   enter: '\r',
   escape: '\u001b',
+  tab: '\t',
 } as const;

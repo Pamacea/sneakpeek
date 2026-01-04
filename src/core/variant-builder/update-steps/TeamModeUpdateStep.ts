@@ -11,6 +11,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { getProvider } from '../../../providers/index.js';
 import { installOrchestratorSkill, removeOrchestratorSkill } from '../../skills.js';
+import { copyTeamPackPrompts, configureTeamToolset } from '../../../team-pack/index.js';
 import type { UpdateContext, UpdateStep } from '../types.js';
 
 // The minified function that controls team mode
@@ -53,13 +54,15 @@ export class TeamModeUpdateStep implements UpdateStep {
   }
 
   private unpatchCli(ctx: UpdateContext): void {
-    const { state, meta } = ctx;
+    const { state, meta, paths } = ctx;
 
     // Find cli.js path
-    const cliPath = path.join(meta.npmDir || '', 'node_modules', '@anthropic-ai', 'claude-code', 'cli.js');
+    const cliPath = path.join(paths.npmDir, 'node_modules', '@anthropic-ai', 'claude-code', 'cli.js');
 
     if (!fs.existsSync(cliPath)) {
       state.notes.push('Warning: cli.js not found, skipping team mode unpatch');
+      // Still try to remove skill since user explicitly requested disable
+      this.removeSkill(ctx);
       return;
     }
 
@@ -70,12 +73,16 @@ export class TeamModeUpdateStep implements UpdateStep {
     if (content.includes(TEAM_MODE_DISABLED)) {
       state.notes.push('Team mode already disabled');
       meta.teamModeEnabled = false;
+      // Still remove skill since user explicitly requested disable
+      this.removeSkill(ctx);
       return;
     }
 
     // Check if patchable (has enabled version)
     if (!content.includes(TEAM_MODE_ENABLED)) {
       state.notes.push('Warning: Team mode function not found in cli.js');
+      // Still try to remove skill since user explicitly requested disable
+      this.removeSkill(ctx);
       return;
     }
 
@@ -87,6 +94,8 @@ export class TeamModeUpdateStep implements UpdateStep {
     const verifyContent = fs.readFileSync(cliPath, 'utf8');
     if (!verifyContent.includes(TEAM_MODE_DISABLED)) {
       state.notes.push('Warning: Team mode unpatch verification failed');
+      // Still try to remove skill since user explicitly requested disable
+      this.removeSkill(ctx);
       return;
     }
 
@@ -94,6 +103,11 @@ export class TeamModeUpdateStep implements UpdateStep {
     state.notes.push('Team mode disabled successfully');
 
     // Remove the multi-agent orchestrator skill
+    this.removeSkill(ctx);
+  }
+
+  private removeSkill(ctx: UpdateContext): void {
+    const { state, meta } = ctx;
     const skillResult = removeOrchestratorSkill(meta.configDir);
     if (skillResult.status === 'removed') {
       state.notes.push('Multi-agent orchestrator skill removed');
@@ -103,10 +117,10 @@ export class TeamModeUpdateStep implements UpdateStep {
   }
 
   private patchCli(ctx: UpdateContext): void {
-    const { state, meta, name } = ctx;
+    const { state, meta, name, paths } = ctx;
 
     // Find cli.js path
-    const cliPath = path.join(meta.npmDir || '', 'node_modules', '@anthropic-ai', 'claude-code', 'cli.js');
+    const cliPath = path.join(paths.npmDir, 'node_modules', '@anthropic-ai', 'claude-code', 'cli.js');
     const backupPath = `${cliPath}.backup`;
 
     if (!fs.existsSync(cliPath)) {
@@ -174,6 +188,19 @@ export class TeamModeUpdateStep implements UpdateStep {
       state.notes.push('Multi-agent orchestrator skill installed');
     } else if (skillResult.status === 'failed') {
       state.notes.push(`Warning: orchestrator skill install failed: ${skillResult.message}`);
+    }
+
+    // Copy team pack prompt files
+    const systemPromptsDir = path.join(meta.tweakDir, 'system-prompts');
+    const copiedFiles = copyTeamPackPrompts(systemPromptsDir);
+    if (copiedFiles.length > 0) {
+      state.notes.push(`Team pack prompts installed (${copiedFiles.join(', ')})`);
+    }
+
+    // Configure TweakCC toolset to block TodoWrite
+    const tweakccConfigPath = path.join(meta.tweakDir, 'config.json');
+    if (configureTeamToolset(tweakccConfigPath)) {
+      state.notes.push('Team toolset configured (TodoWrite blocked)');
     }
   }
 }

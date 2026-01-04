@@ -3,7 +3,7 @@
  * Handles toggling team mode on/off for a variant
  */
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import type { CoreModule } from '../app.js';
 import type { CompletionResult } from './types.js';
 import type { SelectedVariant } from './useVariantUpdate.js';
@@ -27,9 +27,15 @@ export function useTeamModeToggle(options: UseTeamModeToggleOptions): void {
   const { screen, selectedVariant, rootDir, binDir, core, setProgressLines, setScreen, onComplete, refreshVariants } =
     options;
 
+  // Ref to prevent concurrent execution - persists across renders
+  const isRunningRef = useRef(false);
+
   useEffect(() => {
     if (screen !== 'manage-team-mode') return;
     if (!selectedVariant) return;
+    // Prevent concurrent execution
+    if (isRunningRef.current) return;
+    isRunningRef.current = true;
     let cancelled = false;
 
     const runToggle = async () => {
@@ -75,12 +81,19 @@ export function useTeamModeToggle(options: UseTeamModeToggleOptions): void {
           help: [],
         });
       }
-      if (!cancelled) setScreen('manage-team-mode-done');
+      if (!cancelled) {
+        isRunningRef.current = false;
+        setScreen('manage-team-mode-done');
+      }
     };
 
     runToggle();
     return () => {
       cancelled = true;
+      isRunningRef.current = false;
     };
-  }, [screen, selectedVariant, rootDir, binDir, core, setProgressLines, setScreen, onComplete, refreshVariants]);
+    // Note: refreshVariants intentionally excluded from deps - it's a callback used after completion,
+    // not a trigger for the effect. Including it would cause infinite loops since it's recreated each render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [screen, selectedVariant, rootDir, binDir, core, setProgressLines, setScreen, onComplete]);
 }

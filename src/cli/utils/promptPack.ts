@@ -4,10 +4,12 @@
 
 /**
  * Parse prompt pack mode from string value
+ * @deprecated promptPackMode is deprecated - only 'minimal' is supported now
  */
-export function parsePromptPackMode(value?: string): 'minimal' | 'maximal' | undefined {
+export function parsePromptPackMode(value?: string): 'minimal' | undefined {
   if (!value) return undefined;
   const normalized = value.toLowerCase();
-  if (normalized === 'minimal' || normalized === 'maximal') return normalized;
+  // Only 'minimal' is supported now, 'maximal' is deprecated
+  if (normalized === 'minimal') return normalized;
   return undefined;
 }

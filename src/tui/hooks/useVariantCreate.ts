@@ -3,7 +3,7 @@
  * Handles the create-running screen business logic
  */
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import path from 'node:path';
 import type { CoreModule } from '../app.js';
 import type { CreateVariantParams, CompletionResult, ModelOverrides } from './types.js';
@@ -25,8 +25,8 @@ export function buildCreateSummary(params: {
   npmPackage: string;
   npmVersion: string;
   usePromptPack: boolean;
-  promptPackMode: 'minimal' | 'maximal';
   installSkill: boolean;
+  enableTeamMode: boolean;
   modelOverrides: ModelOverrides;
   providerKey: string;
   shellEnv: boolean;
@@ -37,19 +37,34 @@ export function buildCreateSummary(params: {
     npmPackage,
     npmVersion,
     usePromptPack,
-    promptPackMode,
     installSkill,
+    enableTeamMode,
     modelOverrides,
     providerKey,
     shellEnv,
     notes,
   } = params;
 
+  // Build prompt pack description with provider-specific routing info
+  const getPromptPackDescription = (): string => {
+    if (!usePromptPack) return 'off';
+    if (providerKey === 'zai') return 'on (zai-cli routing)';
+    if (providerKey === 'minimax') return 'on (MCP routing)';
+    return 'on';
+  };
+
+  // Build team mode description
+  const getTeamModeDescription = (): string => {
+    if (!enableTeamMode) return 'off';
+    return 'on (orchestrator skill, TodoWrite blocked)';
+  };
+
   return [
     `Provider: ${providerLabel}`,
     `Install: npm ${npmPackage}@${npmVersion}`,
-    `Prompt pack: ${usePromptPack ? `on (${promptPackMode})` : 'off'}`,
+    `Prompt pack: ${getPromptPackDescription()}`,
     `dev-browser skill: ${installSkill ? 'on' : 'off'}`,
+    `Team mode: ${getTeamModeDescription()}`,
     ...(modelOverrides.sonnet || modelOverrides.opus || modelOverrides.haiku
       ? [
           `Models: sonnet=${modelOverrides.sonnet || '-'}, opus=${modelOverrides.opus || '-'}, haiku=${modelOverrides.haiku || '-'}`,
@@ -85,8 +100,14 @@ export function buildHelpLines(): string[] {
 export function useVariantCreate(options: UseVariantCreateOptions): void {
   const { screen, params, core, setProgressLines, setScreen, onComplete } = options;
 
+  // Ref to prevent concurrent execution - persists across renders
+  const isRunningRef = useRef(false);
+
   useEffect(() => {
     if (screen !== 'create-running') return;
+    // Prevent concurrent execution
+    if (isRunningRef.current) return;
+    isRunningRef.current = true;
     let cancelled = false;
 
     const runCreate = async () => {
@@ -105,10 +126,10 @@ export function useVariantCreate(options: UseVariantCreateOptions): void {
           npmPackage: params.npmPackage,
           noTweak: false, // Always apply tweakcc patches
           promptPack: params.usePromptPack,
-          promptPackMode: params.promptPackMode,
           skillInstall: params.installSkill,
           shellEnv: params.shellEnv,
           skillUpdate: params.skillUpdate,
+          enableTeamMode: params.enableTeamMode,
           tweakccStdio: 'pipe' as const,
           onProgress: (step: string) => setProgressLines((prev) => [...prev, step]),
         };
@@ -125,8 +146,8 @@ export function useVariantCreate(options: UseVariantCreateOptions): void {
           npmPackage: params.npmPackage,
           npmVersion: params.npmVersion,
           usePromptPack: params.usePromptPack,
-          promptPackMode: params.promptPackMode,
           installSkill: params.installSkill,
+          enableTeamMode: params.enableTeamMode,
           modelOverrides: params.modelOverrides,
           providerKey: params.providerKey,
           shellEnv: params.shellEnv,
@@ -155,12 +176,16 @@ export function useVariantCreate(options: UseVariantCreateOptions): void {
           help: [],
         });
       }
-      if (!cancelled) setScreen('create-done');
+      if (!cancelled) {
+        isRunningRef.current = false;
+        setScreen('create-done');
+      }
     };
 
     runCreate();
     return () => {
       cancelled = true;
+      isRunningRef.current = false;
     };
   }, [screen, params, core, setProgressLines, setScreen, onComplete]);
 }

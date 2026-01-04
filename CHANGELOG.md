@@ -2,6 +2,45 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.3] - 2025-01-04
+
+### Fixed
+
+- **useEffect infinite loop** when toggling team mode on existing variants
+  - Added ref guards to all async TUI hooks to prevent concurrent execution
+  - Stabilized `refreshVariants` callback with `useCallback`
+  - Hooks affected: `useTeamModeToggle`, `useVariantUpdate`, `useVariantCreate`, `useModelConfig`, `useUpdateAll`
+
+- **Team mode visibility** in configuration/summary screens
+  - TUI SummaryScreen now shows team mode status before variant creation
+  - CLI `printSummary` now shows team mode in all modes (quick, interactive, non-interactive)
+  - Provider-specific prompt pack routing info (zai-cli vs MCP routing)
+
+- **Skill tool examples mismatch** - Added skill clarification spec to prevent confusion
+  - Prompt pack now clarifies that skill examples (commit, review-pr, pdf) are illustrative only
+  - Directs users to check `<available_skills>` for actually installed skills
+
+### Added
+
+- **Team Pack prompt files** for enhanced team mode guidance
+  - `task-management-note.md` - Clarifies TodoWrite deprecation vs Task* tools in team mode
+  - `tasklist.md`, `taskupdate.md`, `task-extra-notes.md` - Enhanced Task* tool descriptions
+
+- **TeamModeScreen** TUI component for team mode selection during variant creation
+
+- **Comprehensive tests**
+  - `test/e2e/blocked-tools.test.ts` - Tests for blocked tools configuration
+  - `test/e2e/team-mode.test.ts` - E2E tests for team mode enable/disable/toggle
+  - `test/provider-matrix.test.ts` - Provider feature matrix validation
+  - `test/tui/TeamModeScreen.test.ts` - TeamModeScreen component tests
+  - `test/tui/ModelConfigScreen.test.ts` - ModelConfigScreen component tests
+
+### Changed
+
+- Removed deprecated `promptPackMode` parameter (maximal mode removed, minimal is now default)
+- Shell env option now only shown for zai provider in summary screens
+- Team mode description now includes details: "on (orchestrator skill, TodoWrite blocked)"
+
 ## [1.1.2] - 2025-01-04
 
 ### Fixed

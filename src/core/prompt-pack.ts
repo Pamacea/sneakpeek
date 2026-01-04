@@ -2,9 +2,9 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { resolveOverlays } from './prompt-pack/overlays.js';
 import { OVERLAY_MARKERS, PROMPT_PACK_TARGETS } from './prompt-pack/targets.js';
-import type { OverlayMap, PromptPackKey, PromptPackMode } from './prompt-pack/types.js';
+import type { OverlayMap, PromptPackKey } from './prompt-pack/types.js';
 
-export type { PromptPackKey, PromptPackMode } from './prompt-pack/types.js';
+export type { PromptPackKey } from './prompt-pack/types.js';
 
 const isPromptPackKey = (value: string): value is PromptPackKey => value === 'zai' || value === 'minimax';
 
@@ -43,18 +43,14 @@ const applyOverlays = (systemPromptsDir: string, overlays: OverlayMap): string[]
   return updated;
 };
 
-export const applyPromptPack = (
-  tweakDir: string,
-  providerKey: string,
-  mode: PromptPackMode = 'minimal'
-): { changed: boolean; updated: string[]; mode: PromptPackMode } => {
+export const applyPromptPack = (tweakDir: string, providerKey: string): { changed: boolean; updated: string[] } => {
   if (!isPromptPackKey(providerKey)) {
-    return { changed: false, updated: [], mode };
+    return { changed: false, updated: [] };
   }
 
-  const overlays = resolveOverlays(providerKey, mode);
+  const overlays = resolveOverlays(providerKey);
   const systemPromptsDir = path.join(tweakDir, 'system-prompts');
   const updated = applyOverlays(systemPromptsDir, overlays);
 
-  return { changed: updated.length > 0, updated, mode };
+  return { changed: updated.length > 0, updated };
 };

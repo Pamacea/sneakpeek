@@ -13,7 +13,6 @@ import {
   ensureModelMapping,
   formatModelNote,
   requirePrompt,
-  parsePromptPackMode,
   buildExtraEnv,
 } from '../utils/index.js';
 
@@ -102,7 +101,6 @@ async function prepareCreateParams(opts: ParsedArgs): Promise<CreateParams> {
 async function handleQuickMode(opts: ParsedArgs, params: CreateParams): Promise<void> {
   const { provider } = params;
   const promptPack = opts['no-prompt-pack'] ? false : undefined;
-  const promptPackMode = parsePromptPackMode(opts['prompt-pack-mode'] as string | undefined);
   const skillInstall = opts['no-skill-install'] ? false : undefined;
   const skillUpdate = Boolean(opts['skill-update']);
   let shellEnv = opts['no-shell-env'] ? false : opts['shell-env'] ? true : undefined;
@@ -132,6 +130,12 @@ async function handleQuickMode(opts: ParsedArgs, params: CreateParams): Promise<
     }
   }
 
+  // Team mode enabled by default for quick setup (use --disable-team-mode to opt out)
+  const enableTeamMode = opts['disable-team-mode'] ? false : true;
+  if (enableTeamMode) {
+    console.log('Team mode will be enabled (orchestrator skill installed)');
+  }
+
   const result = core.createVariant({
     name: params.name,
     providerKey: params.providerKey,
@@ -144,12 +148,11 @@ async function handleQuickMode(opts: ParsedArgs, params: CreateParams): Promise<
     npmPackage: params.npmPackage,
     noTweak: Boolean(opts.noTweak),
     promptPack,
-    promptPackMode,
     skillInstall,
     shellEnv,
     skillUpdate,
     modelOverrides: resolvedModelOverrides,
-    enableTeamMode: Boolean(opts['enable-team-mode']),
+    enableTeamMode,
     tweakccStdio: 'pipe',
   });
 
@@ -169,7 +172,6 @@ async function handleQuickMode(opts: ParsedArgs, params: CreateParams): Promise<
 async function handleInteractiveMode(opts: ParsedArgs, params: CreateParams): Promise<void> {
   const { provider } = params;
   const promptPack = opts['no-prompt-pack'] ? false : undefined;
-  const promptPackMode = parsePromptPackMode(opts['prompt-pack-mode'] as string | undefined);
   const skillInstall = opts['no-skill-install'] ? false : undefined;
   const skillUpdate = Boolean(opts['skill-update']);
   let shellEnv = opts['no-shell-env'] ? false : opts['shell-env'] ? true : undefined;
@@ -213,6 +215,15 @@ async function handleInteractiveMode(opts: ParsedArgs, params: CreateParams): Pr
     }
   }
 
+  // Team mode: enabled by default, can opt-out with --disable-team-mode or answer no to prompt
+  let enableTeamMode = true;
+  if (opts['disable-team-mode']) {
+    enableTeamMode = false;
+  } else if (!opts['enable-team-mode']) {
+    const answer = await prompt('Enable team mode (multi-agent collaboration)? (yes/no)', 'yes');
+    enableTeamMode = answer.trim().toLowerCase().startsWith('y');
+  }
+
   const result = core.createVariant({
     name: nextName,
     providerKey: params.providerKey,
@@ -225,12 +236,11 @@ async function handleInteractiveMode(opts: ParsedArgs, params: CreateParams): Pr
     npmPackage: nextNpmPackage,
     noTweak: Boolean(opts.noTweak),
     promptPack,
-    promptPackMode,
     skillInstall,
     shellEnv,
     skillUpdate,
     modelOverrides: resolvedModelOverrides,
-    enableTeamMode: Boolean(opts['enable-team-mode']),
+    enableTeamMode,
     tweakccStdio: 'pipe',
   });
 
@@ -249,7 +259,6 @@ async function handleInteractiveMode(opts: ParsedArgs, params: CreateParams): Pr
  */
 async function handleNonInteractiveMode(opts: ParsedArgs, params: CreateParams): Promise<void> {
   const promptPack = opts['no-prompt-pack'] ? false : undefined;
-  const promptPackMode = parsePromptPackMode(opts['prompt-pack-mode'] as string | undefined);
   const skillInstall = opts['no-skill-install'] ? false : undefined;
   const skillUpdate = Boolean(opts['skill-update']);
   const shellEnv = opts['no-shell-env'] ? false : opts['shell-env'] ? true : undefined;
@@ -260,6 +269,9 @@ async function handleNonInteractiveMode(opts: ParsedArgs, params: CreateParams):
   }
 
   const resolvedModelOverrides = await ensureModelMapping(params.providerKey, opts, { ...modelOverrides });
+
+  // Team mode enabled by default (use --disable-team-mode to opt out)
+  const enableTeamMode = opts['disable-team-mode'] ? false : true;
 
   const result = core.createVariant({
     name: params.name,
@@ -273,12 +285,11 @@ async function handleNonInteractiveMode(opts: ParsedArgs, params: CreateParams):
     npmPackage: params.npmPackage,
     noTweak: Boolean(opts.noTweak),
     promptPack,
-    promptPackMode,
     skillInstall,
     shellEnv,
     skillUpdate,
     modelOverrides: resolvedModelOverrides,
-    enableTeamMode: Boolean(opts['enable-team-mode']),
+    enableTeamMode,
     tweakccStdio: 'pipe',
   });
 

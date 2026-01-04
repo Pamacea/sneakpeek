@@ -13,8 +13,8 @@ test('buildCreateSummary includes all expected fields', () => {
     npmPackage: '@anthropic-ai/claude-code',
     npmVersion: '2.0.76',
     usePromptPack: true,
-    promptPackMode: 'maximal',
     installSkill: true,
+    enableTeamMode: true,
     modelOverrides: { sonnet: 'model-a', opus: 'model-b', haiku: 'model-c' },
     providerKey: 'zai',
     shellEnv: true,
@@ -23,8 +23,10 @@ test('buildCreateSummary includes all expected fields', () => {
 
   assert.ok(summary.some((line) => line.includes('Zai Cloud')));
   assert.ok(summary.some((line) => line.includes('@anthropic-ai/claude-code')));
-  assert.ok(summary.some((line) => line.includes('maximal')));
+  assert.ok(summary.some((line) => line.includes('Prompt pack: on (zai-cli routing)')));
   assert.ok(summary.some((line) => line.includes('dev-browser skill: on')));
+  assert.ok(summary.some((line) => line.includes('Team mode: on')));
+  assert.ok(summary.some((line) => line.includes('orchestrator skill')));
   assert.ok(summary.some((line) => line.includes('Models:')));
   assert.ok(summary.some((line) => line.includes('Shell env:')));
   assert.ok(summary.some((line) => line.includes('Note 1')));
@@ -36,8 +38,8 @@ test('buildCreateSummary omits models when not set', () => {
     npmPackage: '@anthropic-ai/claude-code',
     npmVersion: '2.0.76',
     usePromptPack: false,
-    promptPackMode: 'minimal',
     installSkill: false,
+    enableTeamMode: false,
     modelOverrides: {},
     providerKey: 'openrouter',
     shellEnv: false,
@@ -45,6 +47,7 @@ test('buildCreateSummary omits models when not set', () => {
 
   assert.ok(!summary.some((line) => line.includes('Models:')));
   assert.ok(!summary.some((line) => line.includes('Shell env:')));
+  assert.ok(summary.some((line) => line.includes('Team mode: off')));
 });
 
 test('buildCreateSummary shows prompt pack off when disabled', () => {
@@ -53,14 +56,31 @@ test('buildCreateSummary shows prompt pack off when disabled', () => {
     npmPackage: '@anthropic-ai/claude-code',
     npmVersion: '2.0.76',
     usePromptPack: false,
-    promptPackMode: 'minimal',
     installSkill: false,
+    enableTeamMode: false,
     modelOverrides: {},
     providerKey: 'custom',
     shellEnv: false,
   });
 
   assert.ok(summary.some((line) => line.includes('Prompt pack: off')));
+});
+
+test('buildCreateSummary shows provider-specific prompt pack routing', () => {
+  // MiniMax should show MCP routing
+  const minimaxSummary = buildCreateSummary({
+    providerLabel: 'MiniMax',
+    npmPackage: '@anthropic-ai/claude-code',
+    npmVersion: '2.0.76',
+    usePromptPack: true,
+    installSkill: false,
+    enableTeamMode: false,
+    modelOverrides: {},
+    providerKey: 'minimax',
+    shellEnv: false,
+  });
+
+  assert.ok(minimaxSummary.some((line) => line.includes('Prompt pack: on (MCP routing)')));
 });
 
 test('buildCreateNextSteps includes variant name and paths', () => {
@@ -91,6 +111,7 @@ function makeTestMeta(
     promptPackMode: 'minimal' | 'maximal';
     skillInstall: boolean;
     shellEnv: boolean;
+    teamModeEnabled: boolean;
   }>
 ) {
   return {
@@ -113,13 +134,16 @@ test('buildUpdateSummary includes provider info', () => {
       promptPackMode: 'maximal',
       skillInstall: true,
       shellEnv: true,
+      teamModeEnabled: true,
     }),
     ['Update note']
   );
 
   assert.ok(summary.some((line) => line.includes('Provider: zai')));
-  assert.ok(summary.some((line) => line.includes('Prompt pack: on')));
+  assert.ok(summary.some((line) => line.includes('Prompt pack: on (zai-cli routing)')));
   assert.ok(summary.some((line) => line.includes('dev-browser skill: on')));
+  assert.ok(summary.some((line) => line.includes('Team mode: on')));
+  assert.ok(summary.some((line) => line.includes('orchestrator skill')));
   assert.ok(summary.some((line) => line.includes('Shell env:')));
   assert.ok(summary.some((line) => line.includes('Update note')));
 });
@@ -128,13 +152,16 @@ test('buildUpdateSummary omits shell env for non-zai providers', () => {
   const summary = buildUpdateSummary(
     makeTestMeta({
       provider: 'minimax',
-      promptPack: false,
+      promptPack: true,
       skillInstall: false,
       shellEnv: false,
+      teamModeEnabled: false,
     })
   );
 
   assert.ok(!summary.some((line) => line.includes('Shell env:')));
+  assert.ok(summary.some((line) => line.includes('Prompt pack: on (MCP routing)')));
+  assert.ok(summary.some((line) => line.includes('Team mode: off')));
 });
 
 test('buildUpdateNextSteps includes variant operations', () => {

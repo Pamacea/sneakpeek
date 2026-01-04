@@ -1,10 +1,10 @@
-import type { OverlayMap, PromptPackMode } from '../types.js';
-import { operatingSpec, subjectiveWorkSpec, verbositySpec } from '../shared.js';
+import type { OverlayMap } from '../types.js';
+import { operatingSpec, subjectiveWorkSpec, verbositySpec, skillClarificationSpec } from '../shared.js';
 
 export const MINIMAX_WEB_SEARCH = 'mcp__MiniMax__web_search';
 export const MINIMAX_UNDERSTAND_IMAGE = 'mcp__MiniMax__understand_image';
 
-const buildMinimaxContract = (mode: PromptPackMode) =>
+const buildMinimaxContract = () =>
   `
 <explicit_guidance>
 <tool_routing priority="critical">
@@ -37,7 +37,7 @@ Single-page URL retrieval:
 - Do NOT misuse web_search to fetch full page content.
 </tool_routing>
 
-${operatingSpec(mode)}
+${operatingSpec()}
 
 ${subjectiveWorkSpec}
 
@@ -58,8 +58,8 @@ MiniMax tool routing:
 ${subjectiveWorkSpec}
 `.trim();
 
-export const buildMinimaxOverlays = (mode: PromptPackMode): OverlayMap => ({
-  main: buildMinimaxContract(mode),
+export const buildMinimaxOverlays = (): OverlayMap => ({
+  main: buildMinimaxContract(),
   mcpCli: `
 ${buildMinimaxExcerpt()}
 
@@ -98,4 +98,5 @@ You MUST load the tool first:
 - MCPSearch query: select:${MINIMAX_WEB_SEARCH} or select:${MINIMAX_UNDERSTAND_IMAGE}
 </explicit_guidance>
   `.trim(),
+  skill: skillClarificationSpec,
 });

@@ -35,9 +35,6 @@ const shouldEnablePromptPack = (providerKey: string, provider?: ProviderTemplate
   return providerKey === 'zai' || providerKey === 'minimax';
 };
 
-const defaultPromptPackMode = (providerKey: string): 'minimal' | 'maximal' =>
-  providerKey === 'zai' || providerKey === 'minimax' ? 'maximal' : 'minimal';
-
 const shouldInstallSkills = (providerKey: string) => providerKey === 'zai' || providerKey === 'minimax';
 
 const shouldEnableShellEnv = (providerKey: string) => providerKey === 'zai';
@@ -56,9 +53,9 @@ export class VariantBuilder {
     this.steps = [
       new PrepareDirectoriesStep(),
       new InstallNpmStep(),
-      new TeamModeStep(), // Patches cli.js for team mode (if enabled)
       new WriteConfigStep(),
-      new BrandThemeStep(),
+      new BrandThemeStep(), // Creates tweakcc/config.json
+      new TeamModeStep(), // Patches cli.js and configures team toolset (needs config.json)
       new TweakccStep(),
       new WrapperStep(),
       new ShellEnvStep(),
@@ -99,7 +96,6 @@ export class VariantBuilder {
     const resolvedNpmPackage = normalizeNpmPackage(params.npmPackage);
     const resolvedNpmVersion = normalizeNpmVersion();
     const promptPackPreference = params.promptPack ?? shouldEnablePromptPack(params.providerKey, provider);
-    const promptPackModePreference = params.promptPackMode ?? defaultPromptPackMode(params.providerKey);
     const promptPackEnabled = !params.noTweak && promptPackPreference;
     const skillInstallEnabled = params.skillInstall ?? shouldInstallSkills(params.providerKey);
     const shellEnvEnabled = params.shellEnv ?? shouldEnableShellEnv(params.providerKey);
@@ -110,7 +106,6 @@ export class VariantBuilder {
       resolvedNpmPackage,
       resolvedNpmVersion,
       promptPackPreference,
-      promptPackModePreference,
       promptPackEnabled,
       skillInstallEnabled,
       shellEnvEnabled,

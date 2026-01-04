@@ -45,6 +45,7 @@ import {
   EnvEditorScreen,
   AboutScreen,
   FeedbackScreen,
+  TeamModeScreen,
 } from './screens/index.js';
 
 // Import UI components
@@ -217,10 +218,12 @@ export const App: React.FC<AppProps> = ({
   const [npmPackage, setNpmPackage] = useState(core.DEFAULT_NPM_PACKAGE || '@anthropic-ai/claude-code');
   const npmVersion = core.DEFAULT_NPM_VERSION || '2.0.76';
   const [usePromptPack, setUsePromptPack] = useState(true);
-  const [promptPackMode, setPromptPackMode] = useState<'minimal' | 'maximal'>('maximal');
+  // promptPackMode is deprecated - always use 'minimal'
+  const promptPackMode = 'minimal' as const;
   const [installSkill, setInstallSkill] = useState(true);
   const [shellEnv, setShellEnv] = useState(true);
   const [skillUpdate, setSkillUpdate] = useState(false);
+  const [enableTeamMode, setEnableTeamMode] = useState(true);
   const [extraEnv, setExtraEnv] = useState<string[]>([]);
   const [progressLines, setProgressLines] = useState<string[]>([]);
   const [doneLines, setDoneLines] = useState<string[]>([]);
@@ -250,12 +253,10 @@ export const App: React.FC<AppProps> = ({
     key?: string | null
   ): {
     promptPack: boolean;
-    promptPackMode: 'minimal' | 'maximal';
     skillInstall: boolean;
     shellEnv: boolean;
   } => ({
     promptPack: key === 'zai' || key === 'minimax',
-    promptPackMode: key === 'zai' || key === 'minimax' ? 'maximal' : 'minimal',
     skillInstall: key === 'zai' || key === 'minimax',
     shellEnv: key === 'zai',
   });
@@ -319,6 +320,9 @@ export const App: React.FC<AppProps> = ({
         case 'create-models':
           setScreen('create-api-key');
           break;
+        case 'create-team-mode':
+          setScreen('create-skill-install');
+          break;
         // Model configuration screens - back through flow
         case 'manage-models':
           setScreen('manage-actions');
@@ -371,6 +375,11 @@ export const App: React.FC<AppProps> = ({
     setCompletionHelp(result.help);
   }, []);
 
+  // Stable callback to refresh variants list
+  const refreshVariants = useCallback(() => {
+    setVariants(core.listVariants(rootDir));
+  }, [core, rootDir]);
+
   // Create variant operation (extracted to useVariantCreate hook)
   const createParams = useMemo(
     () => ({
@@ -391,6 +400,7 @@ export const App: React.FC<AppProps> = ({
       installSkill,
       shellEnv,
       skillUpdate,
+      enableTeamMode,
     }),
     [
       name,
@@ -410,6 +420,7 @@ export const App: React.FC<AppProps> = ({
       installSkill,
       shellEnv,
       skillUpdate,
+      enableTeamMode,
     ]
   );
 
@@ -471,7 +482,7 @@ export const App: React.FC<AppProps> = ({
     setProgressLines,
     setScreen,
     onComplete: handleOperationComplete,
-    refreshVariants: () => setVariants(core.listVariants(rootDir)),
+    refreshVariants,
   });
 
   // Update all variants operation (extracted to useUpdateAll hook)
@@ -498,10 +509,10 @@ export const App: React.FC<AppProps> = ({
     setNpmPackage(core.DEFAULT_NPM_PACKAGE || '@anthropic-ai/claude-code');
     setExtraEnv([]);
     setUsePromptPack(true);
-    setPromptPackMode('maximal');
     setInstallSkill(true);
     setShellEnv(true);
     setSkillUpdate(false);
+    setEnableTeamMode(true);
     setCompletionSummary([]);
     setCompletionNextSteps([]);
     setCompletionHelp([]);
@@ -566,7 +577,6 @@ export const App: React.FC<AppProps> = ({
           setExtraEnv([]);
           setBrandKey('auto');
           setUsePromptPack(defaults.promptPack);
-          setPromptPackMode(defaults.promptPackMode);
           setInstallSkill(defaults.skillInstall);
           setShellEnv(keyDefaults.detectedFrom === 'Z_AI_API_KEY' ? false : defaults.shellEnv);
           setScreen('quick-intro');
@@ -693,7 +703,6 @@ export const App: React.FC<AppProps> = ({
           setExtraEnv([]);
           setBrandKey('auto');
           setUsePromptPack(defaults.promptPack);
-          setPromptPackMode(defaults.promptPackMode);
           setInstallSkill(defaults.skillInstall);
           setShellEnv(keyDefaults.detectedFrom === 'Z_AI_API_KEY' ? false : defaults.shellEnv);
           setScreen('create-intro');
@@ -785,9 +794,8 @@ export const App: React.FC<AppProps> = ({
   if (screen === 'create-base-url') {
     // Skip API key for: zai with detected key, or any provider with credentialOptional
     const skipApiKey = (providerKey === 'zai' && apiKeyDetectedFrom === 'Z_AI_API_KEY') || provider?.credentialOptional;
-    // Prompt packs only available for zai and minimax - skip yes/no, go straight to mode selection
-    const supportsPromptPack = providerKey === 'zai' || providerKey === 'minimax';
-    const nextScreen = supportsPromptPack ? 'create-prompt-pack-mode' : 'create-skill-install';
+    // promptPackMode is deprecated - skip mode selection, go directly to skill-install
+    const nextScreen = 'create-skill-install';
     return (
       <Frame>
         <Header title="Base URL" subtitle="Custom API endpoint (optional)" />
@@ -811,9 +819,8 @@ export const App: React.FC<AppProps> = ({
   }
 
   if (screen === 'create-api-key') {
-    // Prompt packs only available for zai and minimax - skip yes/no, go straight to mode selection
-    const supportsPromptPack = providerKey === 'zai' || providerKey === 'minimax';
-    const nextScreen = supportsPromptPack ? 'create-prompt-pack-mode' : 'create-skill-install';
+    // promptPackMode is deprecated - skip mode selection, go directly to skill-install
+    const nextScreen = 'create-skill-install';
     return (
       <ApiKeyScreen
         providerLabel={provider?.label || 'Provider'}
@@ -829,9 +836,8 @@ export const App: React.FC<AppProps> = ({
 
   // Consolidated model mapping screen for create flow
   if (screen === 'create-models') {
-    // Prompt packs only available for zai and minimax - skip yes/no, go straight to mode selection
-    const supportsPromptPack = providerKey === 'zai' || providerKey === 'minimax';
-    const nextScreen = supportsPromptPack ? 'create-prompt-pack-mode' : 'create-skill-install';
+    // promptPackMode is deprecated - skip mode selection, go directly to skill-install
+    const nextScreen = 'create-skill-install';
     return (
       <ModelConfigScreen
         title="Model Configuration"
@@ -858,11 +864,8 @@ export const App: React.FC<AppProps> = ({
           title="Apply provider prompt pack?"
           onSelect={(value) => {
             setUsePromptPack(value);
-            if (value) {
-              setScreen('create-prompt-pack-mode');
-            } else {
-              setScreen('create-skill-install');
-            }
+            // promptPackMode is deprecated - go directly to skill-install
+            setScreen('create-skill-install');
           }}
         />
         <Divider />
@@ -871,30 +874,7 @@ export const App: React.FC<AppProps> = ({
     );
   }
 
-  if (screen === 'create-prompt-pack-mode') {
-    const items = [
-      { label: 'Minimal', value: 'minimal' },
-      { label: 'Maximal (recommended)', value: 'maximal' },
-    ];
-    return (
-      <Frame>
-        <Header title="Prompt Pack Mode" subtitle="Minimal keeps it light, maximal enables expert mode" />
-        <Divider />
-        <Box flexDirection="column" marginY={1}>
-          <SelectInput
-            items={items}
-            initialIndex={promptPackMode === 'minimal' ? 0 : 1}
-            onSelect={(item) => {
-              setPromptPackMode(item.value as 'minimal' | 'maximal');
-              setScreen('create-skill-install');
-            }}
-          />
-        </Box>
-        <Divider />
-        <HintBar hints={['Select a mode or press Esc to go back']} />
-      </Frame>
-    );
-  }
+  // NOTE: create-prompt-pack-mode screen removed - promptPackMode is deprecated
 
   if (screen === 'create-skill-install') {
     return (
@@ -909,21 +889,33 @@ export const App: React.FC<AppProps> = ({
           title="Install dev-browser skill?"
           onSelect={(value) => {
             setInstallSkill(value);
-            if (providerKey === 'zai') {
-              if (apiKeyDetectedFrom === 'Z_AI_API_KEY') {
-                setShellEnv(false);
-                setScreen('create-env-confirm');
-              } else {
-                setScreen('create-shell-env');
-              }
-            } else {
-              setScreen('create-env-confirm');
-            }
+            setScreen('create-team-mode');
           }}
         />
         <Divider />
         <HintBar />
       </Frame>
+    );
+  }
+
+  if (screen === 'create-team-mode') {
+    return (
+      <TeamModeScreen
+        onSelect={(value) => {
+          setEnableTeamMode(value);
+          if (providerKey === 'zai') {
+            if (apiKeyDetectedFrom === 'Z_AI_API_KEY') {
+              setShellEnv(false);
+              setScreen('create-env-confirm');
+            } else {
+              setScreen('create-shell-env');
+            }
+          } else {
+            setScreen('create-env-confirm');
+          }
+        }}
+        onBack={() => setScreen('create-skill-install')}
+      />
     );
   }
 
@@ -987,6 +979,7 @@ export const App: React.FC<AppProps> = ({
         data={{
           name,
           providerLabel,
+          providerKey: providerKey || undefined,
           brandLabel,
           baseUrl: effectiveBaseUrl,
           apiKey,
@@ -1001,6 +994,7 @@ export const App: React.FC<AppProps> = ({
           usePromptPack,
           promptPackMode,
           installSkill,
+          enableTeamMode,
           shellEnv,
         }}
         onConfirm={() => {

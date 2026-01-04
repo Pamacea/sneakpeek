@@ -1,5 +1,5 @@
-import type { OverlayMap, PromptPackMode } from '../types.js';
-import { operatingSpec, subjectiveWorkSpec, verbositySpec } from '../shared.js';
+import type { OverlayMap } from '../types.js';
+import { operatingSpec, subjectiveWorkSpec, verbositySpec, skillClarificationSpec } from '../shared.js';
 
 export const ZAI_BLOCKED_MCP_TOOLS = [
   'mcp__4_5v_mcp__analyze_image',
@@ -24,7 +24,7 @@ Quick start examples:
 - npx zai-cli repo --help
 `.trim();
 
-const buildZaiContract = (mode: PromptPackMode) =>
+const buildZaiContract = () =>
   `
 <explicit_guidance>
 Provider: z.ai (GLM)
@@ -70,7 +70,7 @@ Blocked tools:
 ${ZAI_BLOCKED_MCP_TOOLS.map((tool) => `- ${tool}`).join('\n')}
 </warning>
 
-${operatingSpec(mode)}
+${operatingSpec()}
 
 ${subjectiveWorkSpec}
 
@@ -91,8 +91,8 @@ ${ZAI_BLOCKED_MCP_TOOLS.map((tool) => `- ${tool}`).join('\n')}
 ${subjectiveWorkSpec}
 `.trim();
 
-export const buildZaiOverlays = (mode: PromptPackMode): OverlayMap => ({
-  main: buildZaiContract(mode),
+export const buildZaiOverlays = (): OverlayMap => ({
+  main: buildZaiContract(),
   mcpCli: `
 ${buildZaiExcerpt()}
 
@@ -154,4 +154,5 @@ ${ZAI_BLOCKED_MCP_TOOLS.map((tool) => `- ${tool}`).join('\n')}
 Prefer zai-cli via Bash for web/search/vision. Only use other MCP tools if the user explicitly configured them and they are clearly relevant.
 </explicit_guidance>
   `.trim(),
+  skill: skillClarificationSpec,
 });
