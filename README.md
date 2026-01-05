@@ -201,6 +201,20 @@ cc-mirror quick --provider mirror --name mclaude
 
 Team mode enables: `TaskCreate`, `TaskGet`, `TaskUpdate`, `TaskList` tools plus an **orchestrator skill** that teaches Claude effective multi-agent coordination patterns.
 
+### Project-Scoped Tasks (v1.2.0+)
+
+Tasks are automatically scoped by project folder — no cross-project pollution:
+
+```bash
+# Run in different project folders - tasks stay isolated
+cd ~/projects/api && mc      # Team: mc-api
+cd ~/projects/frontend && mc # Team: mc-frontend
+
+# Multiple teams in the same project
+TEAM=backend mc   # Team: mc-myproject-backend
+TEAM=frontend mc  # Team: mc-myproject-frontend
+```
+
 → [Team Mode Documentation](docs/features/team-mode.md)
 
 ---

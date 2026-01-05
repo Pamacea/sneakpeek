@@ -106,6 +106,32 @@ Tasks are stored per-variant in isolated directories:
 
 Each cc-mirror variant has completely isolated task storage via `CLAUDE_CONFIG_DIR`.
 
+### Dynamic Team Names (v1.2.0+)
+
+Team names are **automatically scoped by project folder** at runtime. This ensures tasks from different projects don't pollute each other:
+
+| Command | Team Name |
+|---------|-----------|
+| `mc` | `mc-<project-folder>` |
+| `TEAM=A mc` | `mc-<project-folder>-A` |
+| `TEAM=backend mc` | `mc-<project-folder>-backend` |
+
+**Example:** Running `mc` in `/Users/you/projects/my-api` creates team name `mc-my-api`.
+
+### Multiple Teams in Same Project
+
+Use the `TEAM` env var to run separate teams in the same folder:
+
+```bash
+# Terminal 1 - API team
+TEAM=api mc
+
+# Terminal 2 - Frontend team
+TEAM=frontend mc
+```
+
+Each team has its own isolated task storage.
+
 ---
 
 ## 🎯 Orchestration Skill
@@ -345,12 +371,15 @@ Task #3: "Add authentication" (blockedBy: ["2"])
 
 Configure agent identity for multi-agent setups:
 
-| Variable                 | Purpose                          | Example                   |
-| ------------------------ | -------------------------------- | ------------------------- |
-| `CLAUDE_CODE_TEAM_NAME`  | Team namespace for task storage  | `"my-project-team"`       |
-| `CLAUDE_CODE_AGENT_ID`   | Unique identifier for this agent | `"worker-001"`            |
-| `CLAUDE_CODE_AGENT_TYPE` | Agent role/type                  | `"team-lead"`, `"worker"` |
-| `CLAUDE_CODE_AGENT_NAME` | Human-readable agent name        | `"Code Reviewer"`         |
+| Variable                 | Purpose                                      | Example                   |
+| ------------------------ | -------------------------------------------- | ------------------------- |
+| `TEAM`                   | **Short alias** - appends to auto-generated team name | `"api"`, `"frontend"` |
+| `CLAUDE_CODE_TEAM_NAME`  | Base team name (auto-appends project folder) | `"my-variant"`            |
+| `CLAUDE_CODE_AGENT_ID`   | Unique identifier for this agent             | `"worker-001"`            |
+| `CLAUDE_CODE_AGENT_TYPE` | Agent role/type                              | `"team-lead"`, `"worker"` |
+| `CLAUDE_CODE_AGENT_NAME` | Human-readable agent name                    | `"Code Reviewer"`         |
+
+> **Note:** As of v1.2.0, team names are automatically scoped by project folder. The `TEAM` env var is the easiest way to run multiple teams in the same project.
 
 ### Example: Team Lead Configuration
 
