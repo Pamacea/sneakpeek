@@ -5,7 +5,7 @@ description: CLI tool for managing team tasks outside of Claude Code's built-in 
 
 # Task Manager CLI
 
-You have access to `cc-mirror tasks` - a CLI for managing team tasks.
+You have access to `npx cc-mirror tasks` - a CLI for managing team tasks.
 
 ## Auto-Detection
 
@@ -20,24 +20,24 @@ No need to specify `--variant` or `--team` in most cases.
 
 ```bash
 # List tasks
-cc-mirror tasks                    # Open tasks (default)
-cc-mirror tasks --status all       # All tasks
+npx cc-mirror tasks                    # Open tasks (default)
+npx cc-mirror tasks --status all       # All tasks
 
 # View dependencies
-cc-mirror tasks graph              # Visual dependency tree
+npx cc-mirror tasks graph              # Visual dependency tree
 
 # Archive resolved tasks (preserves history)
-cc-mirror tasks archive --resolved --dry-run   # Preview
-cc-mirror tasks archive --resolved             # Execute
+npx cc-mirror tasks archive --resolved --dry-run   # Preview
+npx cc-mirror tasks archive --resolved             # Execute
 
 # Delete permanently (no history)
-cc-mirror tasks clean --resolved --dry-run     # Preview
-cc-mirror tasks clean --resolved               # Execute
+npx cc-mirror tasks clean --resolved --dry-run     # Preview
+npx cc-mirror tasks clean --resolved               # Execute
 
 # Single task operations
-cc-mirror tasks show <id>          # View details
-cc-mirror tasks archive <id>       # Archive one task
-cc-mirror tasks delete <id>        # Delete one task
+npx cc-mirror tasks show <id>          # View details
+npx cc-mirror tasks archive <id>       # Archive one task
+npx cc-mirror tasks delete <id>        # Delete one task
 ```
 
 ## When to Use
@@ -62,16 +62,16 @@ By default, commands target your current team. To view others:
 
 ```bash
 # Different team in same variant
-cc-mirror tasks --team other-project
+npx cc-mirror tasks --team other-project
 
 # Different variant
-cc-mirror tasks --variant zai --team my-project
+npx cc-mirror tasks --variant zai --team my-project
 
 # All teams in current variant
-cc-mirror tasks --all
+npx cc-mirror tasks --all
 
 # All variants, all teams
-cc-mirror tasks --all-variants --all
+npx cc-mirror tasks --all-variants --all
 ```
 
 Ask the user which team/variant they want to view using `AskUserQuestion`.

@@ -242,7 +242,7 @@ ls ~/.cc-mirror/<variant>/config/tasks/<team_name>/
 ### Health Check
 
 ```bash
-cc-mirror doctor
+npx cc-mirror doctor
 ```
 
 ### Reference Files
@@ -287,7 +287,7 @@ Requires `Z_AI_API_KEY` in environment.
 2. Verify `variant.json` exists
 3. Verify `.claude.json` has `hasCompletedOnboarding` + `theme`
 4. Run wrapper in TTY and confirm splash + no onboarding prompt
-5. Use `cc-mirror update test-zai` to validate update flow
+5. Use `npx cc-mirror update test-zai` to validate update flow
 
 ## Testing
 

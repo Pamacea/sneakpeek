@@ -2,6 +2,32 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.4.1] - 2025-01-05
+
+### Added
+
+- **Explicit model selection** for all Task() calls in orchestration skill
+  - Every Task() example now includes `model=` parameter
+  - Model tier framework: haiku (errand runner), sonnet (capable worker), opus (critical thinker)
+  - Guidance on when to use each model based on task type
+
+### Changed
+
+- **Model Selection section** added to SKILL.md with tier descriptions
+- **Updated 12 skill reference files** with explicit model parameters:
+  - `references/tools.md` - Model selection table and examples
+  - `references/patterns.md` - All pattern examples with models
+  - `references/examples.md` - All workflow examples with models
+  - 8 domain guides with appropriate models per task type
+
+### Model Selection Guidelines
+
+| Model | Best For |
+|-------|----------|
+| `haiku` | Exploration, searching, fetching context, data discovery - spawn many |
+| `sonnet` | Implementation, test generation, documentation, structured work |
+| `opus` | Code review, security analysis, architecture, conflict resolution |
+
 ## [1.1.5] - 2025-01-05
 
 ### Added

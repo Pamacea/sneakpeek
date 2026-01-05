@@ -13,8 +13,8 @@ WHAT IS CC-MIRROR?
   config, theme, and settings.
 
 QUICK START
-  cc-mirror quick              # Fast setup: provider + key → done
-  cc-mirror create             # Full wizard with all options
+  npx cc-mirror quick              # Fast setup: provider + key → done
+  npx cc-mirror create             # Full wizard with all options
 
 COMMANDS
   create [options]             Create a new variant
@@ -47,10 +47,10 @@ OPTIONS (advanced)
   --shell-env                  Write env vars to shell profile (Z.ai)
 
 EXAMPLES
-  cc-mirror quick --provider zai
-  cc-mirror create --provider minimax --brand minimax
-  cc-mirror update zai
-  cc-mirror doctor
+  npx cc-mirror quick --provider zai
+  npx cc-mirror create --provider minimax --brand minimax
+  npx cc-mirror update zai
+  npx cc-mirror doctor
 
 LEARN MORE
   https://github.com/numman-ali/cc-mirror

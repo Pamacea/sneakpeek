@@ -43,10 +43,10 @@ function parseIds(value: string | undefined): string[] | undefined {
  */
 function showTasksHelp(): void {
   console.log(`
-cc-mirror tasks - Manage team tasks
+npx cc-mirror tasks - Manage team tasks
 
 USAGE:
-  cc-mirror tasks [operation] [id] [options]
+  npx cc-mirror tasks [operation] [id] [options]
 
 OPERATIONS:
   list              List tasks (default if no operation specified)
@@ -99,13 +99,13 @@ CLEAN OPTIONS:
   --force           Skip confirmation
 
 EXAMPLES:
-  cc-mirror tasks                           # List open tasks
-  cc-mirror tasks --status all              # List all tasks
-  cc-mirror tasks show 5                    # Show task #5
-  cc-mirror tasks create --subject "Fix bug" --description "..."
-  cc-mirror tasks update 5 --status resolved
-  cc-mirror tasks delete 5 --force
-  cc-mirror tasks clean --resolved --dry-run
+  npx cc-mirror tasks                           # List open tasks
+  npx cc-mirror tasks --status all              # List all tasks
+  npx cc-mirror tasks show 5                    # Show task #5
+  npx cc-mirror tasks create --subject "Fix bug" --description "..."
+  npx cc-mirror tasks update 5 --status resolved
+  npx cc-mirror tasks delete 5 --force
+  npx cc-mirror tasks clean --resolved --dry-run
 `);
 }
 
@@ -137,7 +137,7 @@ export async function runTasksCommand({ opts }: TasksCommandOptions): Promise<vo
   switch (operation) {
     case 'show': {
       if (!taskId) {
-        console.error('Error: Task ID required. Usage: cc-mirror tasks show <id>');
+        console.error('Error: Task ID required. Usage: npx cc-mirror tasks show <id>');
         process.exitCode = 1;
         return;
       }
@@ -168,7 +168,7 @@ export async function runTasksCommand({ opts }: TasksCommandOptions): Promise<vo
 
     case 'update': {
       if (!taskId) {
-        console.error('Error: Task ID required. Usage: cc-mirror tasks update <id>');
+        console.error('Error: Task ID required. Usage: npx cc-mirror tasks update <id>');
         process.exitCode = 1;
         return;
       }
@@ -194,7 +194,7 @@ export async function runTasksCommand({ opts }: TasksCommandOptions): Promise<vo
 
     case 'delete': {
       if (!taskId) {
-        console.error('Error: Task ID required. Usage: cc-mirror tasks delete <id>');
+        console.error('Error: Task ID required. Usage: npx cc-mirror tasks delete <id>');
         process.exitCode = 1;
         return;
       }
@@ -265,7 +265,7 @@ export async function runTasksCommand({ opts }: TasksCommandOptions): Promise<vo
 
     default:
       console.error(`Unknown operation: ${operation}`);
-      console.error('Run "cc-mirror tasks --help" for usage.');
+      console.error('Run "npx cc-mirror tasks --help" for usage.');
       process.exitCode = 1;
   }
 }

@@ -141,22 +141,22 @@ mclaude      # Launch Mirror Claude variant
 
 ```bash
 # Create & manage variants
-cc-mirror create              # Full configuration wizard
-cc-mirror quick [options]     # Fast setup with defaults
-cc-mirror list                # List all variants
-cc-mirror update [name]       # Update one or all variants
-cc-mirror remove <name>       # Delete a variant
-cc-mirror doctor              # Health check all variants
+npx cc-mirror create              # Full configuration wizard
+npx cc-mirror quick [options]     # Fast setup with defaults
+npx cc-mirror list                # List all variants
+npx cc-mirror update [name]       # Update one or all variants
+npx cc-mirror remove <name>       # Delete a variant
+npx cc-mirror doctor              # Health check all variants
 
 # Task management (team mode)
-cc-mirror tasks               # List open tasks
-cc-mirror tasks show <id>     # Show task details
-cc-mirror tasks create        # Create new task
-cc-mirror tasks update <id>   # Update task
-cc-mirror tasks delete <id>   # Delete task
-cc-mirror tasks archive <id>  # Archive task
-cc-mirror tasks clean         # Bulk cleanup
-cc-mirror tasks graph         # Visualize dependencies
+npx cc-mirror tasks               # List open tasks
+npx cc-mirror tasks show <id>     # Show task details
+npx cc-mirror tasks create        # Create new task
+npx cc-mirror tasks update <id>   # Update task
+npx cc-mirror tasks delete <id>   # Delete task
+npx cc-mirror tasks archive <id>  # Archive task
+npx cc-mirror tasks clean         # Bulk cleanup
+npx cc-mirror tasks graph         # Visualize dependencies
 
 # Launch your variant
 zai                           # Run Z.ai variant
@@ -204,10 +204,10 @@ Enable multi-agent collaboration with shared task management:
 
 ```bash
 # Enable on any variant
-cc-mirror create --provider zai --name zai-team --enable-team-mode
+npx cc-mirror create --provider zai --name zai-team --enable-team-mode
 
 # Mirror Claude has team mode by default
-cc-mirror quick --provider mirror --name mclaude
+npx cc-mirror quick --provider mirror --name mclaude
 ```
 
 Team mode enables: `TaskCreate`, `TaskGet`, `TaskUpdate`, `TaskList` tools plus an **orchestrator skill** that teaches Claude effective multi-agent coordination patterns.
@@ -218,24 +218,24 @@ Manage team tasks from the command line:
 
 ```bash
 # List open tasks
-cc-mirror tasks
+npx cc-mirror tasks
 
 # View across all teams
-cc-mirror tasks --all
+npx cc-mirror tasks --all
 
 # Create and update tasks
-cc-mirror tasks create --subject "Add auth" --description "JWT implementation"
-cc-mirror tasks update 5 --status resolved --add-comment "Done"
+npx cc-mirror tasks create --subject "Add auth" --description "JWT implementation"
+npx cc-mirror tasks update 5 --status resolved --add-comment "Done"
 
 # Cleanup resolved tasks
-cc-mirror tasks clean --resolved --dry-run
-cc-mirror tasks clean --resolved --force
+npx cc-mirror tasks clean --resolved --dry-run
+npx cc-mirror tasks clean --resolved --force
 
 # Archive instead of delete (preserves task history)
-cc-mirror tasks archive 5
+npx cc-mirror tasks archive 5
 
 # Visualize dependency graph
-cc-mirror tasks graph
+npx cc-mirror tasks graph
 ```
 
 ### Project-Scoped Tasks (v1.2.0+)

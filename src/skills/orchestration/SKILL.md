@@ -270,6 +270,79 @@ Create src/routes/auth.ts with:
 )
 ```
 
+### Model Selection
+
+Choose the right model for each agent's task:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  HAIKU (model="haiku") — The Errand Runner                  │
+│                                                             │
+│  Spawn many of these. They're fast and cheap.               │
+│                                                             │
+│  • Fetch files, grep for patterns, find things              │
+│  • Simple lookups and searches                              │
+│  • Gather raw information for you to synthesize             │
+│  • Mechanical tasks with no judgment calls                  │
+│  • Run 5-10 in parallel to explore quickly                  │
+│                                                             │
+├─────────────────────────────────────────────────────────────┤
+│  SONNET (model="sonnet") — The Capable Worker               │
+│                                                             │
+│  Smart, but needs clear direction. Like a junior-mid dev.   │
+│                                                             │
+│  • Well-structured implementation tasks                     │
+│  • Research: reading docs, understanding APIs               │
+│  • Following established patterns in a codebase             │
+│  • Semi-difficult analysis with clear scope                 │
+│  • Test generation, documentation                           │
+│  • When the task is clear and you've defined what to do     │
+│                                                             │
+├─────────────────────────────────────────────────────────────┤
+│  OPUS (model="opus") — The Critical Thinker                 │
+│                                                             │
+│  Thinks for itself. Trust its judgment.                     │
+│                                                             │
+│  • Ambiguous or underspecified problems                     │
+│  • Architectural decisions and design trade-offs            │
+│  • Complex debugging requiring reasoning across systems     │
+│  • Security review, vulnerability assessment                │
+│  • When you need creative problem-solving                   │
+│  • Tasks where quality of thinking matters most             │
+│  • When the path forward isn't obvious                      │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Example with model selection:**
+
+```
+# Gather info - spawn haiku wildly
+Task(subagent_type="Explore", description="Find auth files", prompt="...", model="haiku", run_in_background=True)
+Task(subagent_type="Explore", description="Find user routes", prompt="...", model="haiku", run_in_background=True)
+Task(subagent_type="Explore", description="Find middleware", prompt="...", model="haiku", run_in_background=True)
+
+# Clear implementation task - sonnet
+Task(
+    subagent_type="general-purpose",
+    description="Implement login route",
+    prompt="Create POST /login following the pattern in src/routes/users.ts...",
+    model="sonnet",
+    run_in_background=True
+)
+
+# Needs judgment and critical thinking - opus
+Task(
+    subagent_type="general-purpose",
+    description="Design auth architecture",
+    prompt="Analyze the codebase and recommend the best auth approach...",
+    model="opus",
+    run_in_background=True
+)
+```
+
+**Always pass `model` explicitly.** Haiku for gathering, sonnet for well-defined work, opus when you need real thinking.
+
 ---
 
 ## 🚀 The Orchestration Flow
