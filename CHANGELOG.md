@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [1.4.1] - 2025-01-05
+## [1.4.2] - 2025-01-05
 
 ### Added
 
@@ -12,6 +12,14 @@ All notable changes to this project will be documented in this file.
   - Guidance on when to use each model based on task type
 
 ### Changed
+
+- **All commands now use `npx cc-mirror`** for portability - no global install required
+  - Updated task-manager skill with `npx` prefix
+  - Updated README.md command examples
+  - Updated team-mode.md CLI examples
+  - Updated CLI help text (help.ts)
+  - Updated AGENTS.md and architecture docs
+  - Updated issue templates
 
 - **Model Selection section** added to SKILL.md with tier descriptions
 - **Updated 12 skill reference files** with explicit model parameters:
