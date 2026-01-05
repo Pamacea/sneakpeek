@@ -131,17 +131,17 @@ function sU() { return !0; }  // enabled (patched)
 - Backup stored at `cli.js.backup` before patching
 - Task storage: `~/.cc-mirror/<variant>/config/tasks/<team_name>/`
 
-### Dynamic Team Names (v1.2.0+)
+### Dynamic Team Names (v1.3.0+)
 
-Team names are automatically scoped by project folder at runtime:
+Team names are **purely directory-based** at runtime:
 
 | Command | Team Name |
 |---------|-----------|
-| `mc` | `mc-<project-folder>` |
-| `TEAM=A mc` | `mc-<project-folder>-A` |
-| `TEAM=backend mc` | `mc-<project-folder>-backend` |
+| `mc` | `<project-folder>` |
+| `TEAM=A mc` | `<project-folder>-A` |
+| `TEAM=backend mc` | `<project-folder>-backend` |
 
-This ensures tasks are isolated per-project by default. Use the `TEAM` env var to run multiple teams in the same project folder.
+This ensures tasks are isolated per-project. The variant name is NOT included in the team name. Use the `TEAM` env var to run multiple teams in the same project folder.
 
 ### Team Mode Components
 
@@ -153,10 +153,13 @@ This ensures tasks are isolated per-project by default. Use the `TEAM` env var t
 
 | Variable | Purpose |
 |----------|---------|
-| `CLAUDE_CODE_TEAM_NAME` | Base team name (auto-appends project folder) |
+| `CLAUDE_CODE_TEAM_MODE` | Enables team mode (set in settings.json) |
+| `CLAUDE_CODE_TEAM_NAME` | Actual team name (set by wrapper at runtime, NOT in settings.json) |
 | `TEAM` | Optional modifier for multiple teams in same project |
 | `CLAUDE_CODE_AGENT_ID` | Unique identifier for this agent |
 | `CLAUDE_CODE_AGENT_TYPE` | Agent role: `team-lead` or `worker` |
+
+**Important**: `CLAUDE_CODE_TEAM_NAME` must NOT be in settings.json, or Claude Code will overwrite the wrapper's dynamic value. The wrapper checks `CLAUDE_CODE_TEAM_MODE` and sets `CLAUDE_CODE_TEAM_NAME` based on the project folder.
 
 ## Provider Blocked Tools
 

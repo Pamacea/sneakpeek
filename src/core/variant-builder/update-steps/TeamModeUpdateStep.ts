@@ -120,7 +120,7 @@ export class TeamModeUpdateStep implements UpdateStep {
   }
 
   private patchCli(ctx: UpdateContext): void {
-    const { state, meta, name, paths } = ctx;
+    const { state, meta, paths } = ctx;
 
     // Find cli.js path
     const cliPath = path.join(paths.npmDir, 'node_modules', '@anthropic-ai', 'claude-code', 'cli.js');
@@ -169,9 +169,9 @@ export class TeamModeUpdateStep implements UpdateStep {
       try {
         const settings = JSON.parse(fs.readFileSync(settingsPath, 'utf8'));
         settings.env = settings.env || {};
-        // Only set if not already set
-        if (!settings.env.CLAUDE_CODE_TEAM_NAME) {
-          settings.env.CLAUDE_CODE_TEAM_NAME = name;
+        // Use TEAM_MODE flag (not TEAM_NAME) - wrapper sets actual team name dynamically
+        if (!settings.env.CLAUDE_CODE_TEAM_MODE) {
+          settings.env.CLAUDE_CODE_TEAM_MODE = '1';
         }
         if (!settings.env.CLAUDE_CODE_AGENT_TYPE) {
           settings.env.CLAUDE_CODE_AGENT_TYPE = 'team-lead';
