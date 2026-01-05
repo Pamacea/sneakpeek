@@ -130,7 +130,18 @@ function sU() { return !0; }  // enabled (patched)
 
 - Backup stored at `cli.js.backup` before patching
 - Task storage: `~/.cc-mirror/<variant>/config/tasks/<team_name>/`
-- Team name configurable via `CLAUDE_CODE_TEAM_NAME` env var
+
+### Dynamic Team Names (v1.2.0+)
+
+Team names are automatically scoped by project folder at runtime:
+
+| Command | Team Name |
+|---------|-----------|
+| `mc` | `mc-<project-folder>` |
+| `TEAM=A mc` | `mc-<project-folder>-A` |
+| `TEAM=backend mc` | `mc-<project-folder>-backend` |
+
+This ensures tasks are isolated per-project by default. Use the `TEAM` env var to run multiple teams in the same project folder.
 
 ### Team Mode Components
 
@@ -142,7 +153,8 @@ function sU() { return !0; }  // enabled (patched)
 
 | Variable | Purpose |
 |----------|---------|
-| `CLAUDE_CODE_TEAM_NAME` | Team namespace for task storage |
+| `CLAUDE_CODE_TEAM_NAME` | Base team name (auto-appends project folder) |
+| `TEAM` | Optional modifier for multiple teams in same project |
 | `CLAUDE_CODE_AGENT_ID` | Unique identifier for this agent |
 | `CLAUDE_CODE_AGENT_TYPE` | Agent role: `team-lead` or `worker` |
 
