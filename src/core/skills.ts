@@ -116,10 +116,10 @@ export const ensureDevBrowserSkill = (opts: {
 };
 
 // ============================================================================
-// Multi-Agent Orchestrator Skill (bundled with cc-mirror)
+// Orchestration Skill (bundled with cc-mirror)
 // ============================================================================
 
-const ORCHESTRATOR_SKILL_NAME = 'multi-agent-orchestrator';
+const ORCHESTRATOR_SKILL_NAME = 'orchestration';
 
 /**
  * Find the bundled orchestrator skill directory
@@ -152,7 +152,7 @@ export interface OrchestratorSkillResult {
 }
 
 /**
- * Install the multi-agent-orchestrator skill to a variant's config directory
+ * Install the orchestration skill to a variant's config directory
  */
 export const installOrchestratorSkill = (configDir: string): OrchestratorSkillResult => {
   const sourceDir = findBundledSkillDir();
@@ -191,7 +191,7 @@ export const installOrchestratorSkill = (configDir: string): OrchestratorSkillRe
 };
 
 /**
- * Remove the multi-agent-orchestrator skill from a variant's config directory
+ * Remove the orchestration skill from a variant's config directory
  */
 export const removeOrchestratorSkill = (configDir: string): OrchestratorSkillResult => {
   const skillsDir = path.join(configDir, 'skills');

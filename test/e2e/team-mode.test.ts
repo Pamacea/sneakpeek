@@ -57,7 +57,7 @@ test('E2E: Team Mode', async (t) => {
       assert.ok(!cliContent.includes(TEAM_MODE_DISABLED), 'cli.js should not have team mode disabled');
 
       // Verify orchestrator skill installed
-      const skillPath = path.join(variantDir, 'config', 'skills', 'multi-agent-orchestrator');
+      const skillPath = path.join(variantDir, 'config', 'skills', 'orchestration');
       assert.ok(fs.existsSync(skillPath), 'orchestrator skill directory should exist');
       assert.ok(fs.existsSync(path.join(skillPath, 'SKILL.md')), 'SKILL.md should exist');
 
@@ -106,7 +106,7 @@ test('E2E: Team Mode', async (t) => {
       assert.ok(!cliContent.includes(TEAM_MODE_ENABLED), 'cli.js should not have team mode enabled');
 
       // Verify orchestrator skill NOT installed
-      const skillPath = path.join(variantDir, 'config', 'skills', 'multi-agent-orchestrator');
+      const skillPath = path.join(variantDir, 'config', 'skills', 'orchestration');
       assert.ok(!fs.existsSync(skillPath), 'orchestrator skill should not be installed');
 
       // Verify variant.json does not have teamModeEnabled
@@ -141,7 +141,7 @@ test('E2E: Team Mode', async (t) => {
       assert.ok(cliContent.includes(TEAM_MODE_ENABLED), 'mirror should auto-enable team mode');
 
       // Verify orchestrator skill installed
-      const skillPath = path.join(variantDir, 'config', 'skills', 'multi-agent-orchestrator');
+      const skillPath = path.join(variantDir, 'config', 'skills', 'orchestration');
       assert.ok(fs.existsSync(skillPath), 'orchestrator skill should be auto-installed for mirror');
     });
   });
@@ -185,7 +185,7 @@ test('E2E: Team Mode', async (t) => {
       assert.ok(cliContent.includes(TEAM_MODE_ENABLED), 'should have team mode enabled after update');
 
       // Verify skill installed
-      const skillPath = path.join(variantDir, 'config', 'skills', 'multi-agent-orchestrator');
+      const skillPath = path.join(variantDir, 'config', 'skills', 'orchestration');
       assert.ok(fs.existsSync(skillPath), 'skill should be installed after enabling');
 
       // Disable via update (noTweak to avoid tweakcc async issues with fake npm)

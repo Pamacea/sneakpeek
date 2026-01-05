@@ -17,7 +17,7 @@ test('installOrchestratorSkill installs skill to config directory', () => {
   assert.ok(result.path);
 
   // Verify skill files exist
-  const skillDir = path.join(tempDir, 'skills', 'multi-agent-orchestrator');
+  const skillDir = path.join(tempDir, 'skills', 'orchestration');
   assert.ok(fs.existsSync(skillDir), 'skill directory should exist');
   assert.ok(fs.existsSync(path.join(skillDir, 'SKILL.md')), 'SKILL.md should exist');
   assert.ok(fs.existsSync(path.join(skillDir, 'references')), 'references directory should exist');
@@ -28,7 +28,7 @@ test('installOrchestratorSkill installs skill to config directory', () => {
 
 test('installOrchestratorSkill skips user-managed skill', () => {
   const tempDir = makeTempDir();
-  const skillDir = path.join(tempDir, 'skills', 'multi-agent-orchestrator');
+  const skillDir = path.join(tempDir, 'skills', 'orchestration');
   fs.mkdirSync(skillDir, { recursive: true });
 
   // Create a user-managed skill (no marker file)
@@ -66,7 +66,7 @@ test('removeOrchestratorSkill removes managed skill', () => {
   // Install first
   installOrchestratorSkill(tempDir);
 
-  const skillDir = path.join(tempDir, 'skills', 'multi-agent-orchestrator');
+  const skillDir = path.join(tempDir, 'skills', 'orchestration');
   assert.ok(fs.existsSync(skillDir), 'skill should exist before removal');
 
   // Remove
@@ -90,7 +90,7 @@ test('removeOrchestratorSkill skips if skill not installed', () => {
 
 test('removeOrchestratorSkill preserves user-managed skill', () => {
   const tempDir = makeTempDir();
-  const skillDir = path.join(tempDir, 'skills', 'multi-agent-orchestrator');
+  const skillDir = path.join(tempDir, 'skills', 'orchestration');
   fs.mkdirSync(skillDir, { recursive: true });
 
   // Create a user-managed skill (no marker file)

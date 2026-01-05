@@ -3,7 +3,7 @@
  *
  * Allows user to enable/disable team mode during variant creation.
  * Team mode enables multi-agent coordination tools (TaskCreate, TaskGet, TaskUpdate, TaskList)
- * and installs the multi-agent-orchestrator skill.
+ * and installs the orchestration skill.
  */
 
 import React from 'react';
@@ -38,7 +38,7 @@ export const TeamModeScreen: React.FC<TeamModeScreenProps> = ({ onSelect }) => {
       </Box>
 
       <Box flexDirection="column" marginBottom={1}>
-        <Text color={colors.primaryBright}>Installs: multi-agent-orchestrator skill</Text>
+        <Text color={colors.primaryBright}>Installs: orchestration skill</Text>
       </Box>
 
       <YesNoSelect title="Enable team mode?" onSelect={onSelect} />

@@ -3,6 +3,7 @@ name: 'Tool Description: TaskList'
 description: Description for the TaskList tool (Team Mode version)
 ccVersion: 2.0.70
 -->
+
 Use this tool to list all tasks in the task list.
 
 ## When to Use This Tool
@@ -15,6 +16,7 @@ Use this tool to list all tasks in the task list.
 ## Output
 
 Returns a summary of each task:
+
 - **id**: Task identifier (use with TaskGet, TaskUpdate)
 - **subject**: Brief description of the task
 - **status**: 'open' or 'resolved'

@@ -25,7 +25,7 @@ test('TeamModeScreen renders team mode explanation', async () => {
   const output = app.lastFrame() ?? '';
 
   assert.ok(output.includes('Team Mode'), 'Should show title');
-  assert.ok(output.includes('orchestrator'), 'Should mention orchestrator skill');
+  assert.ok(output.includes('orchestration'), 'Should mention orchestration skill');
   assert.ok(
     output.includes('TaskCreate') || output.includes('multi-agent'),
     'Should mention task tools or multi-agent'

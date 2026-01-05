@@ -38,71 +38,115 @@
 └──────────────────────────────────────────────────┘
 ```
 
-### Anatomy of Excellent Questions
+### The Maximal Philosophy
 
-```python
-AskUserQuestion(questions=[
-    {
-        "question": "What's the primary goal for this feature?",
-        "header": "Goal",           # Short label (max 12 chars)
-        "options": [
-            {
-                "label": "Performance (Recommended)",
-                "description": "Optimize for speed. Best when handling high traffic."
-            },
-            {
-                "label": "Simplicity",
-                "description": "Keep it straightforward. Easier to maintain long-term."
-            },
-            {
-                "label": "Flexibility",
-                "description": "Make it configurable. Good when requirements may change."
-            }
-        ],
-        "multiSelect": False        # True if multiple can be selected
-    }
-])
+```
+┌──────────────────────────────────────────────────┐
+│                                                  │
+│   GO MAXIMAL                                     │
+│                                                  │
+│   • 4 questions when gathering context           │
+│   • 4 options per question                       │
+│   • RICH descriptions (no length limit!)         │
+│   • Creative options they haven't considered     │
+│   • Cover every relevant dimension               │
+│   • Be a consultant, not a waiter                │
+│                                                  │
+│   Descriptions can be full sentences,            │
+│   explain trade-offs, give examples,             │
+│   mention implications. GO DEEP.                 │
+│                                                  │
+│   Users don't know what they want until          │
+│   they see the options. Surface dimensions       │
+│   they haven't thought about.                    │
+│                                                  │
+└──────────────────────────────────────────────────┘
 ```
 
-### The Golden Rules
+### Golden Rules
 
-| Rule                            | Why                                                      |
-| ------------------------------- | -------------------------------------------------------- |
-| **2-4 options per question**    | Too few = not helpful. Too many = overwhelming.          |
-| **Recommended first**           | Guide users toward the best choice with "(Recommended)"  |
-| **Rich descriptions**           | Help users make informed decisions quickly               |
-| **Multiple questions together** | Gather all context upfront, then execute with confidence |
-| **Never text menus**            | Always use the tool. No exceptions.                      |
+| Rule                           | Why                                                     |
+| ------------------------------ | ------------------------------------------------------- |
+| **4 questions when unclear**   | Explore every dimension of the request                  |
+| **4 options per question**     | Comprehensive choices, including creative angles        |
+| **Recommended first**          | Guide users toward the best choice with "(Recommended)" |
+| **Rich descriptions**          | Help users make informed decisions quickly              |
+| **multiSelect where relevant** | Let them pick multiple when choices aren't exclusive    |
+| **Never text menus**           | Always use the tool. No exceptions.                     |
 
-### Multi-Question Patterns
-
-When you need multiple dimensions of input, ask them together:
+### Comprehensive Example
 
 ```python
 AskUserQuestion(questions=[
     {
-        "question": "What authentication approach fits your app?",
-        "header": "Auth",
+        "question": "What's the scope you're envisioning?",
+        "header": "Scope",
         "options": [
-            {"label": "JWT (Recommended)", "description": "Stateless tokens, great for APIs"},
-            {"label": "Sessions", "description": "Server-side state, simpler for web apps"},
-            {"label": "OAuth only", "description": "Social logins, no password management"}
+            {"label": "Production-ready (Recommended)", "description": "Full implementation with tests, error handling, docs"},
+            {"label": "Functional MVP", "description": "Core feature working, polish later"},
+            {"label": "Prototype/spike", "description": "Explore feasibility, throwaway code OK"},
+            {"label": "Just the design", "description": "Architecture and plan only, no code yet"}
         ],
         "multiSelect": False
     },
     {
-        "question": "Which features do you need?",
-        "header": "Features",
+        "question": "What matters most for this feature?",
+        "header": "Priority",
         "options": [
-            {"label": "Email/password login", "description": "Traditional registration flow"},
-            {"label": "Password reset", "description": "Email-based recovery"},
-            {"label": "Remember me", "description": "Persistent sessions across visits"},
-            {"label": "Rate limiting", "description": "Prevent brute force attacks"}
+            {"label": "User experience", "description": "Smooth, intuitive, delightful to use"},
+            {"label": "Performance", "description": "Fast, efficient, scales well"},
+            {"label": "Maintainability", "description": "Clean code, easy to extend later"},
+            {"label": "Ship speed", "description": "Get it working ASAP, refine later"}
         ],
-        "multiSelect": True  # Multiple can be selected
+        "multiSelect": True
+    },
+    {
+        "question": "Any technical constraints I should know?",
+        "header": "Constraints",
+        "options": [
+            {"label": "Must match existing patterns", "description": "Follow conventions already in codebase"},
+            {"label": "Specific tech/library required", "description": "You have preferences on tools to use"},
+            {"label": "Backward compatibility", "description": "Can't break existing functionality"},
+            {"label": "No constraints", "description": "Free to choose the best approach"}
+        ],
+        "multiSelect": True
+    },
+    {
+        "question": "How should I handle edge cases?",
+        "header": "Edge Cases",
+        "options": [
+            {"label": "Comprehensive (Recommended)", "description": "Handle all edge cases, defensive coding"},
+            {"label": "Happy path focus", "description": "Main flow solid, edge cases basic"},
+            {"label": "Fail fast", "description": "Throw errors early, let caller handle"},
+            {"label": "Graceful degradation", "description": "Always return something usable"}
+        ],
+        "multiSelect": False
     }
 ])
 ```
+
+### Domain-Specific Question Banks
+
+**For implementation tasks:**
+
+- Scope (production/MVP/prototype/design-only)
+- Priority (UX/performance/maintainability/speed)
+- Constraints (patterns/tech/compatibility/none)
+- Edge case handling
+
+**For bug fixes:**
+
+- Urgency (critical/important/when-possible)
+- Fix approach (minimal/comprehensive/refactor)
+- Testing expectations
+- Related areas to check
+
+**For reviews:**
+
+- Focus areas (security/performance/quality/all)
+- Depth (quick/standard/comprehensive)
+- Output format (comments/report/both)
+- Action expectations (approve/block/advise)
 
 ---
 

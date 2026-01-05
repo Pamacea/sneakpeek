@@ -135,7 +135,7 @@ function sU() { return !0; }  // enabled (patched)
 ### Team Mode Components
 
 1. **cli.js patch**: Enables TaskCreate, TaskGet, TaskUpdate, TaskList tools
-2. **Orchestrator skill**: Installed to `config/skills/multi-agent-orchestrator/`
+2. **Orchestrator skill**: Installed to `config/skills/orchestration/`
 3. **Team Pack**: Prompt files + toolset config (blocks TodoWrite, merges provider blocked tools)
 
 ### Agent Identity Env Vars

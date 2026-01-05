@@ -80,7 +80,7 @@ export class TeamModeStep implements BuildStep {
       return;
     }
 
-    // Add team env vars to settings.json
+    // Add team env vars and permissions to settings.json
     const settingsPath = path.join(paths.configDir, 'settings.json');
     if (fs.existsSync(settingsPath)) {
       try {
@@ -93,6 +93,14 @@ export class TeamModeStep implements BuildStep {
         if (!settings.env.CLAUDE_CODE_AGENT_TYPE) {
           settings.env.CLAUDE_CODE_AGENT_TYPE = 'team-lead';
         }
+
+        // Add orchestration skill to auto-approve list
+        settings.permissions = settings.permissions || {};
+        settings.permissions.allow = settings.permissions.allow || [];
+        if (!settings.permissions.allow.includes('Skill(orchestration)')) {
+          settings.permissions.allow.push('Skill(orchestration)');
+        }
+
         fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2));
       } catch {
         state.notes.push('Warning: Could not update settings.json with team env vars');

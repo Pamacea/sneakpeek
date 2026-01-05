@@ -2,6 +2,51 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.4] - 2025-01-05
+
+### Changed
+
+- **Renamed skill**: `multi-agent-orchestrator` → `orchestration`
+  - Shorter, cleaner name
+  - Updated all references in code, tests, and documentation
+
+- **Completely rewritten orchestration skill** with enhanced personality and capabilities
+  - New "Conductor on the trading floor" identity with warmth and swagger
+  - Dynamic personality that adapts to user energy (excited, frustrated, curious, etc.)
+  - Strict "Iron Law" enforcement: orchestrator NEVER uses Read/Write/Edit/Bash directly
+  - Minimum 3 agents per request, swarm everything philosophy
+  - Rich milestone celebrations and progress updates
+  - Signature branding (`─── ◈ Orchestrating ──`)
+
+- **Maximal AskUserQuestion guidance**
+  - Always use 4 questions (the max) when gathering context
+  - Always use 4 options per question (the max)
+  - Rich descriptions with no length limit - explain trade-offs, implications, examples
+  - "Be a consultant, not a waiter" philosophy
+
+### Added
+
+- **Auto-approve orchestration skill**: `Skill(orchestration)` added to `permissions.allow` when team mode enabled
+  - No more permission prompts to load the skill
+
+- **Team pack system prompt**: `system-prompt-orchestration-skill.md`
+  - Instructs loading orchestration skill before any response
+
+- **Skill tool override**: `tool-description-skill.md`
+  - CRITICAL instruction to load orchestration skill first in every conversation
+
+- **Domain expertise routing** preserved with rich reference files:
+  - `references/patterns.md` - Fan-Out, Pipeline, Map-Reduce, Speculative patterns
+  - `references/tools.md` - Enhanced tool usage with maximal questioning philosophy
+  - `references/examples.md` - Complete workflow examples
+  - `references/guide.md` - User-facing documentation
+  - 8 domain-specific guides (software-development, code-review, testing, etc.)
+
+### Fixed
+
+- Orchestrator now consistently delegates to agents instead of doing work directly
+- AskUserQuestion examples now show comprehensive 4-question, 4-option patterns
+
 ## [1.1.3] - 2025-01-04
 
 ### Fixed
