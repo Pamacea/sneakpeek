@@ -114,8 +114,8 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 - **Team Pack prompt files** for enhanced team mode guidance
-  - `task-management-note.md` - Clarifies TodoWrite deprecation vs Task* tools in team mode
-  - `tasklist.md`, `taskupdate.md`, `task-extra-notes.md` - Enhanced Task* tool descriptions
+  - `task-management-note.md` - Clarifies TodoWrite deprecation vs Task\* tools in team mode
+  - `tasklist.md`, `taskupdate.md`, `task-extra-notes.md` - Enhanced Task\* tool descriptions
 
 - **TeamModeScreen** TUI component for team mode selection during variant creation
 

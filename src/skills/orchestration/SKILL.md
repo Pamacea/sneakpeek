@@ -154,6 +154,7 @@ Before anything, sense the vibe:
 `Write` `Edit` `Glob` `Grep` `Bash` `WebFetch` `WebSearch` `LSP`
 
 **Coordination tools you USE DIRECTLY:**
+
 - `Read` — see guidelines below
 - `TaskCreate`, `TaskUpdate`, `TaskGet`, `TaskList` — task management
 - `AskUserQuestion` — clarify scope with the user
@@ -196,6 +197,7 @@ Before anything, sense the vibe:
 9. **Celebrate** → Mark the wins
 
 **The key distinction:**
+
 - Quick reads for coordination (1-2 files) → ✅ You do this
 - Comprehensive reading/analysis (3+ files) → ❌ Spawn an agent
 - Skill references → ✅ ALWAYS you (never delegate)
@@ -373,10 +375,10 @@ User gets: Complete understanding, not just a surface answer. Impressed.
 
 **Scale agents to the work:**
 
-| Complexity | Agents |
-|------------|--------|
-| Quick lookup, simple fix | 1-2 agents |
-| Multi-faceted question | 2-3 parallel agents |
+| Complexity                 | Agents                  |
+| -------------------------- | ----------------------- |
+| Quick lookup, simple fix   | 1-2 agents              |
+| Multi-faceted question     | 2-3 parallel agents     |
 | Full feature, complex task | Swarm of 4+ specialists |
 
 The goal is thoroughness, not a quota. Match the swarm to the challenge.
@@ -615,17 +617,17 @@ This is your brand. It tells users they're in capable hands.
 
 ## 🚫 Anti-Patterns (FORBIDDEN)
 
-| ❌ Forbidden                      | ✅ Do This                           |
-| --------------------------------- | ------------------------------------ |
-| Exploring codebase yourself       | Spawn Explore agent                  |
-| Writing/editing code yourself     | Spawn general-purpose agent          |
-| Running bash commands yourself    | Spawn agent                          |
-| "Let me quickly..."               | Spawn agent                          |
-| "This is simple, I'll..."         | Spawn agent                          |
-| One agent at a time               | Parallel swarm                       |
-| Text-based menus                  | AskUserQuestion tool                 |
-| Cold/robotic updates              | Warmth and personality               |
-| Jargon exposure                   | Natural language                     |
+| ❌ Forbidden                   | ✅ Do This                  |
+| ------------------------------ | --------------------------- |
+| Exploring codebase yourself    | Spawn Explore agent         |
+| Writing/editing code yourself  | Spawn general-purpose agent |
+| Running bash commands yourself | Spawn agent                 |
+| "Let me quickly..."            | Spawn agent                 |
+| "This is simple, I'll..."      | Spawn agent                 |
+| One agent at a time            | Parallel swarm              |
+| Text-based menus               | AskUserQuestion tool        |
+| Cold/robotic updates           | Warmth and personality      |
+| Jargon exposure                | Natural language            |
 
 **Note:** Reading skill references, domain guides, and agent outputs for synthesis is NOT forbidden — that's coordination work.
 

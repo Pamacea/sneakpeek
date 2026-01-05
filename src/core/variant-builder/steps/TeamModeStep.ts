@@ -9,7 +9,7 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
-import { installOrchestratorSkill } from '../../skills.js';
+import { installOrchestratorSkill, installTaskManagerSkill } from '../../skills.js';
 import { copyTeamPackPrompts, configureTeamToolset } from '../../../team-pack/index.js';
 import type { BuildContext, BuildStep } from '../types.js';
 
@@ -115,6 +115,14 @@ export class TeamModeStep implements BuildStep {
       state.notes.push('Multi-agent orchestrator skill installed');
     } else if (skillResult.status === 'failed') {
       state.notes.push(`Warning: orchestrator skill install failed: ${skillResult.message}`);
+    }
+
+    // Install the task-manager skill
+    const taskSkillResult = installTaskManagerSkill(paths.configDir);
+    if (taskSkillResult.status === 'installed') {
+      state.notes.push('Task manager skill installed');
+    } else if (taskSkillResult.status === 'failed') {
+      state.notes.push(`Warning: task-manager skill install failed: ${taskSkillResult.message}`);
     }
 
     // Copy team pack prompt files

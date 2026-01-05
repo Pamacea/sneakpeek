@@ -10,7 +10,12 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { getProvider } from '../../../providers/index.js';
-import { installOrchestratorSkill, removeOrchestratorSkill } from '../../skills.js';
+import {
+  installOrchestratorSkill,
+  removeOrchestratorSkill,
+  installTaskManagerSkill,
+  removeTaskManagerSkill,
+} from '../../skills.js';
 import { copyTeamPackPrompts, configureTeamToolset } from '../../../team-pack/index.js';
 import type { UpdateContext, UpdateStep } from '../types.js';
 
@@ -117,6 +122,13 @@ export class TeamModeUpdateStep implements UpdateStep {
     } else if (skillResult.status === 'failed') {
       state.notes.push(`Warning: orchestrator skill removal failed: ${skillResult.message}`);
     }
+
+    const taskSkillResult = removeTaskManagerSkill(meta.configDir);
+    if (taskSkillResult.status === 'removed') {
+      state.notes.push('Task manager skill removed');
+    } else if (taskSkillResult.status === 'failed') {
+      state.notes.push(`Warning: task-manager skill removal failed: ${taskSkillResult.message}`);
+    }
   }
 
   private patchCli(ctx: UpdateContext): void {
@@ -199,6 +211,14 @@ export class TeamModeUpdateStep implements UpdateStep {
       state.notes.push('Multi-agent orchestrator skill installed');
     } else if (skillResult.status === 'failed') {
       state.notes.push(`Warning: orchestrator skill install failed: ${skillResult.message}`);
+    }
+
+    // Install the task-manager skill
+    const taskSkillResult = installTaskManagerSkill(meta.configDir);
+    if (taskSkillResult.status === 'installed') {
+      state.notes.push('Task manager skill installed');
+    } else if (taskSkillResult.status === 'failed') {
+      state.notes.push(`Warning: task-manager skill install failed: ${taskSkillResult.message}`);
     }
 
     // Copy team pack prompt files

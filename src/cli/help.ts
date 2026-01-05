@@ -24,6 +24,7 @@ COMMANDS
   remove <name>                Remove a variant
   doctor                       Health check all variants
   tweak <name>                 Launch tweakcc customization
+  tasks [operation]            Manage team tasks (list, show, create, update, delete, clean)
 
 OPTIONS (create/quick)
   --name <name>                Variant name (becomes CLI command)

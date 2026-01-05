@@ -1,6 +1,6 @@
 {
   "name": "cc-mirror",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "type": "module",
   "description": "Create multiple isolated Claude Code variants with custom providers (Z.ai, MiniMax, OpenRouter, Claude Code Router)",
   "author": "Numman Ali",
