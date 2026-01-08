@@ -16,10 +16,11 @@ When users ask you to perform tasks, check if any of the available skills below 
 When users ask you to run a "slash command" or reference "/<something>" (e.g., "/commit", "/review-pr"), they are referring to a skill. Use this tool to invoke the corresponding skill.
 
 Example:
-  User: "run /commit"
-  Assistant: [Calls Skill tool with skill: "commit"]
+User: "run /commit"
+Assistant: [Calls Skill tool with skill: "commit"]
 
 How to invoke:
+
 - Use this tool with the skill name and optional arguments
 - Examples:
   - \`skill: "pdf"\` - invoke the pdf skill
@@ -28,6 +29,7 @@ How to invoke:
   - \`skill: "ms-office-suite:pdf"\` - invoke using fully qualified name
 
 Important:
+
 - **FIRST**: Always load the \`orchestration\` skill at the start of every conversation
 - When a skill is relevant, you must invoke this tool IMMEDIATELY as your first action
 - NEVER just announce or mention a skill in your text response without actually calling this tool

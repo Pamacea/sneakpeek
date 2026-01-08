@@ -2,7 +2,7 @@
  * Task create operation - Create a new task
  */
 
-import { createTask, resolveContext, detectCurrentTeam, getTasksDir } from '../../../core/tasks/index.js';
+import { createTask, resolveContext, detectCurrentTeam, getTasksDir, loadAllTasks } from '../../../core/tasks/index.js';
 import type { TasksCreateOptions } from './types.js';
 import { formatTaskJson } from './output.js';
 
@@ -38,7 +38,8 @@ export function runTasksCreate(opts: TasksCreateOptions): void {
   });
 
   if (opts.json) {
-    console.log(formatTaskJson(task, location));
+    const allTasks = loadAllTasks(location.tasksDir);
+    console.log(formatTaskJson(task, location, allTasks));
   } else {
     console.log(`Created task #${task.id}: ${task.subject}`);
     console.log(`Location: ${location.variant} / ${location.team}`);
