@@ -32,6 +32,10 @@ export {
   detectCurrentTeam,
   listVariantsWithTasks,
   resolveContext,
+  resolveTasksDir,
+  resolveTeams,
+  DEFAULT_VARIANT,
+  DEFAULT_CLAUDE_CONFIG_DIR,
   type ResolveOptions,
 } from './resolve.js';
 
