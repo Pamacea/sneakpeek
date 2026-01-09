@@ -169,9 +169,11 @@ mclaude
 │  │   └── config.json         Mirror theme config        │
 │  └── variant.json            Variant metadata           │
 │                                                         │
-│  Wrapper: ~/.local/bin/mclaude                          │
+│  Wrapper: <bin-dir>/mclaude                             │
 └─────────────────────────────────────────────────────────┘
 ```
+
+Default `<bin-dir>` is `~/.local/bin` on macOS/Linux and `~/.cc-mirror/bin` on Windows.
 
 ### What Mirror Sets
 

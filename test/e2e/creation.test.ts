@@ -7,8 +7,11 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import * as core from '../../src/core/index.js';
+import { getWrapperPath, getWrapperScriptPath } from '../../src/core/paths.js';
 import { makeTempDir, readFile, cleanup, withFakeNpm } from '../helpers/index.js';
 import { PROVIDERS } from './providers.js';
+
+const isWindows = process.platform === 'win32';
 
 test('E2E: Create variants for all providers', async (t) => {
   const createdDirs: string[] = [];
@@ -44,7 +47,7 @@ test('E2E: Create variants for all providers', async (t) => {
         assert.ok(fs.existsSync(variantDir), `${provider.name} variant dir should exist`);
 
         // Verify wrapper was created
-        const wrapperPath = path.join(binDir, provider.key);
+        const wrapperPath = getWrapperPath(binDir, provider.key);
         assert.ok(fs.existsSync(wrapperPath), `${provider.name} wrapper should exist`);
         assert.equal(result.wrapperPath, wrapperPath);
 
@@ -89,20 +92,39 @@ test('E2E: Create variants for all providers', async (t) => {
           tweakccStdio: 'pipe',
         });
 
-        const wrapperPath = path.join(binDir, `${provider.key}-art`);
-        const wrapperContent = readFile(wrapperPath);
+        const wrapperPath = getWrapperPath(binDir, `${provider.key}-art`);
+        const scriptPath = getWrapperScriptPath(binDir, `${provider.key}-art`);
+        const wrapperContent = readFile(isWindows ? scriptPath : wrapperPath);
 
         // Verify ANSI color codes are present (escape character \x1b)
-        assert.ok(wrapperContent.includes('\x1b[38;5;'), `${provider.name} wrapper should contain ANSI color codes`);
+        if (isWindows) {
+          assert.ok(
+            wrapperContent.includes('\\u001b[38;5;'),
+            `${provider.name} wrapper should contain ANSI color codes`
+          );
+        } else {
+          assert.ok(wrapperContent.includes('\x1b[38;5;'), `${provider.name} wrapper should contain ANSI color codes`);
+        }
 
         // Verify the case statement includes the provider's splash style
-        assert.ok(
-          wrapperContent.includes(`${provider.expectedSplashStyle})`),
-          `${provider.name} wrapper should have case for splash style`
-        );
+        if (isWindows) {
+          assert.ok(
+            wrapperContent.includes(`"${provider.expectedSplashStyle}"`),
+            `${provider.name} wrapper should include splash style`
+          );
+        } else {
+          assert.ok(
+            wrapperContent.includes(`${provider.expectedSplashStyle})`),
+            `${provider.name} wrapper should have case for splash style`
+          );
+        }
 
         // Verify reset code is present
-        assert.ok(wrapperContent.includes('\x1b[0m'), `${provider.name} wrapper should contain color reset code`);
+        if (isWindows) {
+          assert.ok(wrapperContent.includes('\\u001b[0m'), `${provider.name} wrapper should contain color reset code`);
+        } else {
+          assert.ok(wrapperContent.includes('\x1b[0m'), `${provider.name} wrapper should contain color reset code`);
+        }
 
         // Verify CC_MIRROR_SPLASH_STYLE env var is read
         assert.ok(

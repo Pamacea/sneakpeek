@@ -5,14 +5,17 @@
  * without actually downloading packages.
  */
 
+import fs from 'node:fs';
 import path from 'node:path';
 import { makeTempDir, writeExecutable, cleanup } from './fs-helpers.js';
+
+const isWindows = process.platform === 'win32';
 
 /**
  * Create a fake npm script that creates a dummy CLI
  */
 export const createFakeNpm = (dir: string) => {
-  const npmPath = path.join(dir, 'npm');
+  const npmPath = path.join(dir, isWindows ? 'npm.js' : 'npm');
   const script = `#!/usr/bin/env node
 const fs = require('fs');
 const path = require('path');
@@ -36,6 +39,14 @@ const teamModeFunc = 'function Uq(){return!1}';
 fs.writeFileSync(cliPath, '#!/usr/bin/env node\\n' + teamModeFunc + '\\n' + 'console.log(' + JSON.stringify(payload) + ');\\n');
 fs.chmodSync(cliPath, 0o755);
 `;
+  if (isWindows) {
+    fs.writeFileSync(npmPath, script, { encoding: 'utf8' });
+    const cmdPath = path.join(dir, 'npm.cmd');
+    const cmdLines = ['@echo off', 'setlocal', 'node "%~dp0npm.js" %*', ''];
+    fs.writeFileSync(cmdPath, cmdLines.join('\r\n'), { encoding: 'utf8' });
+    return cmdPath;
+  }
+
   writeExecutable(npmPath, script);
   return npmPath;
 };
@@ -47,7 +58,7 @@ export const withFakeNpm = (fn: () => void) => {
   const binDir = makeTempDir();
   createFakeNpm(binDir);
   const previousPath = process.env.PATH || '';
-  process.env.PATH = `${binDir}:${previousPath}`;
+  process.env.PATH = `${binDir}${path.delimiter}${previousPath}`;
   try {
     fn();
   } finally {

@@ -4,10 +4,12 @@
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import path from 'node:path';
 import * as core from '../../src/core/index.js';
+import { getWrapperPath, getWrapperScriptPath } from '../../src/core/paths.js';
 import { makeTempDir, readFile, cleanup, withFakeNpm } from '../helpers/index.js';
 import { PROVIDERS } from './providers.js';
+
+const isWindows = process.platform === 'win32';
 
 test('E2E: Colored ASCII art content verification', async (t) => {
   const createdDirs: string[] = [];
@@ -41,18 +43,26 @@ test('E2E: Colored ASCII art content verification', async (t) => {
           tweakccStdio: 'pipe',
         });
 
-        const wrapperPath = path.join(binDir, `color-${provider.key}`);
-        wrapperContents.set(provider.key, readFile(wrapperPath));
+        const wrapperPath = getWrapperPath(binDir, `color-${provider.key}`);
+        const scriptPath = getWrapperScriptPath(binDir, `color-${provider.key}`);
+        wrapperContents.set(provider.key, readFile(isWindows ? scriptPath : wrapperPath));
       }
 
       // Verify each provider has its specific color
       /* eslint-disable no-control-regex */
-      const colorPatterns: Record<string, RegExp> = {
-        zai: /\x1b\[38;5;220m/, // Gold
-        minimax: /\x1b\[38;5;203m/, // Coral/salmon red
-        openrouter: /\x1b\[38;5;43m/, // Teal
-        ccrouter: /\x1b\[38;5;39m/, // Sky blue
-      };
+      const colorPatterns: Record<string, RegExp> = isWindows
+        ? {
+            zai: /\\u001b\[38;5;220m/, // Gold
+            minimax: /\\u001b\[38;5;203m/, // Coral/salmon red
+            openrouter: /\\u001b\[38;5;43m/, // Teal
+            ccrouter: /\\u001b\[38;5;39m/, // Sky blue
+          }
+        : {
+            zai: /\x1b\[38;5;220m/, // Gold
+            minimax: /\x1b\[38;5;203m/, // Coral/salmon red
+            openrouter: /\x1b\[38;5;43m/, // Teal
+            ccrouter: /\x1b\[38;5;39m/, // Sky blue
+          };
       /* eslint-enable no-control-regex */
 
       for (const [providerKey, pattern] of Object.entries(colorPatterns)) {
