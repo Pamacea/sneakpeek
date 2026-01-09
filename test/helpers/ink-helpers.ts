@@ -4,10 +4,12 @@
  * Common utilities for testing ink-based TUI components.
  */
 
+const TICK_MS = process.env.CI ? 60 : 30;
+
 /**
  * Wait for a short time to allow ink to process updates
  */
-export const tick = () => new Promise((resolve) => setTimeout(resolve, 30));
+export const tick = () => new Promise((resolve) => setTimeout(resolve, TICK_MS));
 
 /**
  * Send input to stdin and wait for processing
