@@ -82,10 +82,11 @@ test('writeWrapper sets CLAUDE_CONFIG_DIR', () => {
     const content = fs.readFileSync(isWindows ? scriptPath : wrapperPath, 'utf8');
     if (isWindows) {
       assert.ok(content.includes('process.env.CLAUDE_CONFIG_DIR'), 'Should set CLAUDE_CONFIG_DIR');
+      assert.ok(content.includes(JSON.stringify(configDir)), 'Should include config dir path');
     } else {
       assert.ok(content.includes('CLAUDE_CONFIG_DIR='), 'Should set CLAUDE_CONFIG_DIR');
+      assert.ok(content.includes(configDir), 'Should include config dir path');
     }
-    assert.ok(content.includes(configDir), 'Should include config dir path');
   } finally {
     cleanup(tempDir);
   }
@@ -110,7 +111,11 @@ test('writeWrapper sets TWEAKCC_CONFIG_DIR', () => {
     }
     // tweakDir is derived from configDir's parent + /tweakcc
     const expectedTweakDir = path.join(tempDir, 'tweakcc');
-    assert.ok(content.includes(expectedTweakDir), 'Should include tweakcc dir path');
+    if (isWindows) {
+      assert.ok(content.includes(JSON.stringify(expectedTweakDir)), 'Should include tweakcc dir path');
+    } else {
+      assert.ok(content.includes(expectedTweakDir), 'Should include tweakcc dir path');
+    }
   } finally {
     cleanup(tempDir);
   }
