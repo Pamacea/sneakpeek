@@ -3,6 +3,8 @@ import path from 'node:path';
 import { spawn, spawnSync } from 'node:child_process';
 import { commandExists } from './paths.js';
 
+const npmCommand = process.platform === 'win32' ? 'npm.cmd' : 'npm';
+
 export const resolveNpmCliPath = (npmDir: string, npmPackage: string): string => {
   const packageParts = npmPackage.split('/');
   return path.join(npmDir, 'node_modules', ...packageParts, 'cli.js');
@@ -14,13 +16,13 @@ export const installNpmClaude = (params: {
   npmVersion: string;
   stdio?: 'inherit' | 'pipe';
 }): { cliPath: string } => {
-  if (!commandExists('npm')) {
+  if (!commandExists(npmCommand)) {
     throw new Error('npm is required for npm-based installs.');
   }
 
   const stdio = params.stdio ?? 'inherit';
   const pkgSpec = params.npmVersion ? `${params.npmPackage}@${params.npmVersion}` : params.npmPackage;
-  const result = spawnSync('npm', ['install', '--prefix', params.npmDir, '--no-save', pkgSpec], {
+  const result = spawnSync(npmCommand, ['install', '--prefix', params.npmDir, '--no-save', pkgSpec], {
     stdio: 'pipe',
     encoding: 'utf8',
   });
@@ -32,8 +34,9 @@ export const installNpmClaude = (params: {
 
   if (result.status !== 0) {
     const output = `${result.stderr ?? ''}\n${result.stdout ?? ''}`.trim();
+    const errorMessage = result.error ? `\n${result.error.message}` : '';
     const tail = output.length > 0 ? `\n${output}` : '';
-    throw new Error(`npm install failed for ${pkgSpec}.${tail}`);
+    throw new Error(`npm install failed for ${pkgSpec}.${errorMessage}${tail}`);
   }
 
   const cliPath = resolveNpmCliPath(params.npmDir, params.npmPackage);
@@ -54,14 +57,14 @@ export const installNpmClaudeAsync = (params: {
   stdio?: 'inherit' | 'pipe';
 }): Promise<{ cliPath: string }> => {
   return new Promise((resolve, reject) => {
-    if (!commandExists('npm')) {
+    if (!commandExists(npmCommand)) {
       reject(new Error('npm is required for npm-based installs.'));
       return;
     }
 
     const stdio = params.stdio ?? 'inherit';
     const pkgSpec = params.npmVersion ? `${params.npmPackage}@${params.npmVersion}` : params.npmPackage;
-    const child = spawn('npm', ['install', '--prefix', params.npmDir, '--no-save', pkgSpec], {
+    const child = spawn(npmCommand, ['install', '--prefix', params.npmDir, '--no-save', pkgSpec], {
       stdio: 'pipe',
     });
 

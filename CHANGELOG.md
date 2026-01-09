@@ -18,6 +18,10 @@ All notable changes to this project will be documented in this file.
 
 - Windows PATH guidance for wrapper scripts added to user-facing docs.
 
+### Fixed
+
+- Windows installs call `npm.cmd` explicitly and surface spawn errors for npm-based installs.
+
 ## [1.5.0] - 2025-01-06
 
 ### Changed
