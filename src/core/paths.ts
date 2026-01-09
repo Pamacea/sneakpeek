@@ -4,6 +4,16 @@ import path from 'node:path';
 
 export const isWindows = process.platform === 'win32';
 
+const VARIANT_NAME_PATTERN = /^[A-Za-z0-9_][A-Za-z0-9._-]*$/;
+
+export const assertValidVariantName = (name: string): void => {
+  if (!name || !VARIANT_NAME_PATTERN.test(name)) {
+    throw new Error(
+      `Invalid variant name "${name}". Use letters, numbers, underscores, dots, and dashes (no spaces or slashes).`
+    );
+  }
+};
+
 export const expandTilde = (input?: string): string | undefined => {
   if (!input) return input;
   if (input === '~') return os.homedir();

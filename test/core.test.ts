@@ -6,6 +6,9 @@ import * as core from '../src/core/index.js';
 import { getWrapperPath } from '../src/core/paths.js';
 import { makeTempDir, readFile, cleanup, resolveNpmCliPath } from './helpers/index.js';
 
+const resolveNpmPackageJsonPath = (npmDir: string, npmPackage: string) =>
+  path.join(npmDir, 'node_modules', ...npmPackage.split('/'), 'package.json');
+
 test('core create/update/remove/doctor flows', async () => {
   const rootDir = makeTempDir();
   const binDir = makeTempDir();
@@ -25,11 +28,13 @@ test('core create/update/remove/doctor flows', async () => {
   const variantDir = path.join(rootDir, 'alpha');
   const npmDir = path.join(variantDir, 'npm');
   const binaryPath = resolveNpmCliPath(npmDir, core.DEFAULT_NPM_PACKAGE);
+  const packageJsonPath = resolveNpmPackageJsonPath(npmDir, core.DEFAULT_NPM_PACKAGE);
   const configPath = path.join(variantDir, 'config', 'settings.json');
   const wrapperPath = getWrapperPath(binDir, 'alpha');
   const variantMetaPath = path.join(variantDir, 'variant.json');
 
   assert.ok(fs.existsSync(binaryPath));
+  assert.ok(fs.existsSync(packageJsonPath));
   assert.ok(fs.existsSync(configPath));
   assert.ok(fs.existsSync(wrapperPath));
   assert.ok(fs.existsSync(variantMetaPath));
@@ -42,12 +47,18 @@ test('core create/update/remove/doctor flows', async () => {
   assert.equal(configJson.env.DISABLE_AUTOUPDATER, '1');
   assert.equal(configJson.env.CLAUDE_CODE_ENABLE_PROMPT_SUGGESTION, '1');
 
+  const pkgBefore = JSON.parse(readFile(packageJsonPath)) as { version?: string };
+  assert.equal(pkgBefore.version, core.DEFAULT_NPM_VERSION);
+
   const metaBefore = JSON.parse(readFile(variantMetaPath)) as { updatedAt?: string };
   await new Promise((resolve) => setTimeout(resolve, 10));
   core.updateVariant(rootDir, 'alpha', { noTweak: true, tweakccStdio: 'pipe' });
   const metaAfter = JSON.parse(readFile(variantMetaPath)) as { updatedAt?: string };
   assert.ok(metaAfter.updatedAt, 'updatedAt should be set after update');
   assert.notEqual(metaAfter.updatedAt, metaBefore.updatedAt);
+
+  const pkgAfter = JSON.parse(readFile(packageJsonPath)) as { version?: string };
+  assert.equal(pkgAfter.version, core.DEFAULT_NPM_VERSION);
 
   const doctorReport = core.doctor(rootDir, binDir);
   assert.equal(doctorReport.length, 1);

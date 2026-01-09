@@ -57,8 +57,13 @@ test('writeWrapper creates script with shebang', () => {
 
     const content = fs.readFileSync(wrapperPath, 'utf8');
     if (isWindows) {
+      const scriptFilename = path.basename(scriptPath);
       assert.ok(content.startsWith('@echo off'), 'Windows launcher should start with @echo off');
       assert.ok(content.includes('%~dp0'), 'Windows launcher should resolve script path from its directory');
+      assert.ok(
+        content.includes(`node "%~dp0${scriptFilename}" %*`),
+        'Windows launcher should invoke node with the script path'
+      );
       assert.ok(fs.existsSync(scriptPath), 'Windows wrapper should include .mjs script');
       return;
     }

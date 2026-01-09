@@ -13,6 +13,7 @@ All notable changes to this project will be documented in this file.
 - Test runner defaults to serial execution (unless `--test-concurrency` is provided) to reduce flaky Ink/TUI runs.
 - E2E flows now use real npm installs; update tests verify `variant.json` timestamps and settings-only updates preserve the CLI.
 - TUI tests wait for async updates to complete before assertions.
+- Core flow tests now assert the installed npm package version after create/update.
 
 ### Documentation
 
@@ -20,7 +21,8 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
-- Windows npm installs run via the shell to execute `npm.cmd` and surface spawn errors for npm-based installs.
+- Windows npm installs run via the shell to execute `npm.cmd`, with validated/quoted inputs to avoid unsafe command parsing.
+- Variant creation rejects invalid names that could break wrapper scripts.
 
 ## [1.5.0] - 2025-01-06
 
