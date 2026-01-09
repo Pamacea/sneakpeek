@@ -20,7 +20,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
-- Windows installs call `npm.cmd` explicitly and surface spawn errors for npm-based installs.
+- Windows npm installs run via the shell to execute `npm.cmd` and surface spawn errors for npm-based installs.
 
 ## [1.5.0] - 2025-01-06
 

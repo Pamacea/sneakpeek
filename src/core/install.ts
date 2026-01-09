@@ -3,7 +3,8 @@ import path from 'node:path';
 import { spawn, spawnSync } from 'node:child_process';
 import { commandExists } from './paths.js';
 
-const npmCommand = process.platform === 'win32' ? 'npm.cmd' : 'npm';
+const npmCommand = 'npm';
+const npmShell = process.platform === 'win32';
 
 export const resolveNpmCliPath = (npmDir: string, npmPackage: string): string => {
   const packageParts = npmPackage.split('/');
@@ -25,6 +26,7 @@ export const installNpmClaude = (params: {
   const result = spawnSync(npmCommand, ['install', '--prefix', params.npmDir, '--no-save', pkgSpec], {
     stdio: 'pipe',
     encoding: 'utf8',
+    shell: npmShell,
   });
 
   if (stdio === 'inherit') {
@@ -66,6 +68,7 @@ export const installNpmClaudeAsync = (params: {
     const pkgSpec = params.npmVersion ? `${params.npmPackage}@${params.npmVersion}` : params.npmPackage;
     const child = spawn(npmCommand, ['install', '--prefix', params.npmDir, '--no-save', pkgSpec], {
       stdio: 'pipe',
+      shell: npmShell,
     });
 
     let stdout = '';
