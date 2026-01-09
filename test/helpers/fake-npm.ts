@@ -37,7 +37,11 @@ const payload = process.env.CC_MIRROR_FAKE_NPM_PAYLOAD || 'claude dummy';
 // Include team mode function for testing - disabled by default (can be patched)
 const teamModeFunc = 'function Uq(){return!1}';
 fs.writeFileSync(cliPath, '#!/usr/bin/env node\\n' + teamModeFunc + '\\n' + 'console.log(' + JSON.stringify(payload) + ');\\n');
-fs.chmodSync(cliPath, 0o755);
+try {
+  fs.chmodSync(cliPath, 0o755);
+} catch (error) {
+  // Windows can throw EPERM on chmod; ignore for tests.
+}
 `;
   if (isWindows) {
     fs.writeFileSync(npmPath, script, { encoding: 'utf8' });
