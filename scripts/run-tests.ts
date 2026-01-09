@@ -6,12 +6,13 @@ import process from 'node:process';
 const ROOT = process.cwd();
 const TEST_DIR = path.join(ROOT, 'test');
 
-const collectTestFiles = async (dir, out) => {
+const collectTestFiles = async (dir: string, out: string[]): Promise<string[]> => {
   let entries;
   try {
     entries = await readdir(dir, { withFileTypes: true });
   } catch (error) {
-    if (error && error.code === 'ENOENT') {
+    const err = error as NodeJS.ErrnoException;
+    if (err && err.code === 'ENOENT') {
       return out;
     }
     throw error;
@@ -39,16 +40,16 @@ const collectTestFiles = async (dir, out) => {
   return out;
 };
 
-const testFiles = await collectTestFiles(TEST_DIR, []);
+const testFiles: string[] = await collectTestFiles(TEST_DIR, []);
 if (testFiles.length === 0) {
   console.error('No test files found under ./test.');
   process.exit(1);
 }
 
-testFiles.sort((a, b) => a.localeCompare(b));
+testFiles.sort((a: string, b: string) => a.localeCompare(b));
 
-const passThroughArgs = process.argv.slice(2);
-const nodeArgs = ['--test', '--import', 'tsx', ...passThroughArgs, ...testFiles];
+const passThroughArgs: string[] = process.argv.slice(2);
+const nodeArgs: string[] = ['--test', '--import', 'tsx', ...passThroughArgs, ...testFiles];
 
 const child = spawn(process.execPath, nodeArgs, { stdio: 'inherit' });
 child.on('exit', (code, signal) => {
