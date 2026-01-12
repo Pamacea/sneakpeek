@@ -66,7 +66,7 @@ Default `<bin-dir>` is `~/.local/bin` on macOS/Linux and `~/.cc-mirror/bin` on W
 
 ## Updating Binaries
 
-- `cc-mirror update` re-runs `npm install` for the pinned package/version and re-applies tweakcc.
+- `cc-mirror update` rebuilds the `npm/` + `tweakcc/` directories (preserving config, tasks, skills, approvals), then re-runs `npm install` and reapplies tweakcc for a clean upgrade.
 
 ## Maintenance Checklist
 

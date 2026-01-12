@@ -305,6 +305,7 @@ minimax                           # Run MiniMax variant
 --no-team-mode           Disable team mode (not recommended)
 --no-tweak               Skip tweakcc theme
 --no-prompt-pack         Skip provider prompt pack
+--verbose               Show full tweakcc output during update
 ```
 
 ---

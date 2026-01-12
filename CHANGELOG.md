@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.6.4] - 2026-01-12
+
+### Changed
+
+- `cc-mirror update` now resets `npm/` and `tweakcc/` before reinstalling, preserving config/tasks/skills for a clean rebuild.
+- Update command defaults to quiet tweakcc output; use `--verbose` to show full logs.
+
+### Added
+
+- Update rebuild step test coverage, plus a gated live E2E update smoke test for headless CLI runs.
+
+### Fixed
+
+- Update no longer reuses stale tweakcc prompt data that could corrupt the CLI after upgrades.
+
 ## [1.6.3] - 2026-01-09
 
 ### Added

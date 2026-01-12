@@ -51,6 +51,7 @@ OPTIONS (advanced)
   --no-tweak                   Skip tweakcc theming
   --no-prompt-pack             Skip provider prompt pack
   --shell-env                  Write env vars to shell profile
+  --verbose                    Show full tweakcc output during update
 
 PROVIDERS
   mirror        Pure Claude with team mode (recommended)
