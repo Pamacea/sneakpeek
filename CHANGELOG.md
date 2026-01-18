@@ -2,11 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
-## [Unreleased] - 2026-01-15
+## [Unreleased]
+
+## [1.6.6] - 2026-01-18
 
 ### Changed
 
-- Default Claude Code npm version updated to 2.1.7.
+- Default Claude Code npm version updated to 2.1.12.
 - Team mode is disabled in current builds; legacy flags are ignored.
 
 ### Added

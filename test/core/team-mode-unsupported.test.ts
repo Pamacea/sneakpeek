@@ -75,7 +75,7 @@ test('TeamModeUpdateStep cleans legacy team assets when unsupported', () => {
       },
       prefs: {
         resolvedNpmPackage: '@anthropic-ai/claude-code',
-        resolvedNpmVersion: '2.1.7',
+        resolvedNpmVersion: '2.1.12',
         promptPackPreference: false,
         promptPackEnabled: false,
         skillInstallEnabled: false,

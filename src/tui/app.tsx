@@ -217,7 +217,7 @@ export const App: React.FC<AppProps> = ({
   const [rootDir, _setRootDir] = useState(initialRootDir || core.DEFAULT_ROOT);
   const [binDir, _setBinDir] = useState(initialBinDir || core.DEFAULT_BIN_DIR);
   const [npmPackage, setNpmPackage] = useState(core.DEFAULT_NPM_PACKAGE || '@anthropic-ai/claude-code');
-  const npmVersion = core.DEFAULT_NPM_VERSION || '2.1.7';
+  const npmVersion = core.DEFAULT_NPM_VERSION || '2.1.12';
   const [usePromptPack, setUsePromptPack] = useState(true);
   // promptPackMode is deprecated - always use 'minimal'
   const promptPackMode = 'minimal' as const;
