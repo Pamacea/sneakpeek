@@ -1,6 +1,8 @@
 # claude-sneakpeek
 
-A fork of [cc-mirror](https://github.com/anthropics/cc-mirror) that unlocks feature-flagged capabilities in Claude Code.
+Get a parallel build of Claude Code that unlocks feature-flagged capabilities like swarm mode.
+
+This installs a completely isolated instance of Claude Code—separate config, sessions, MCP servers, and credentials. Your existing Claude Code installation is untouched.
 
 ## Install
 
@@ -8,50 +10,48 @@ A fork of [cc-mirror](https://github.com/anthropics/cc-mirror) that unlocks feat
 npx @realmikekelly/claude-sneakpeek quick --name claudesp
 ```
 
-Run `claudesp` to launch Claude Code with unreleased features enabled.
+Add `~/.local/bin` to your PATH if not already (macOS/Linux):
 
-## What does it do?
+```bash
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc && source ~/.zshrc
+```
 
-claude-sneakpeek installs Claude Code and patches it to enable features that are built but not yet publicly released. Currently this includes:
+Then run `claudesp` to launch.
 
-- **Swarm mode** — Native multi-agent orchestration with the `TeammateTool`
-- **Delegate mode** — Task tool can spawn agents in delegate mode
-- **Team coordination** — Teammate mailbox/messaging and task ownership
+## What gets unlocked?
 
-Your main Claude Code installation stays untouched. Each sneakpeek variant is fully isolated with its own config, sessions, and credentials.
+Features that are built into Claude Code but not yet publicly released:
+
+- **Swarm mode** — Native multi-agent orchestration with `TeammateTool`
+- **Delegate mode** — Task tool can spawn background agents
+- **Team coordination** — Teammate messaging and task ownership
 
 ## Commands
 
 ```bash
 npx @realmikekelly/claude-sneakpeek quick --name claudesp   # Install
-npx @realmikekelly/claude-sneakpeek update claudesp         # Update to latest
+npx @realmikekelly/claude-sneakpeek update claudesp         # Update
 npx @realmikekelly/claude-sneakpeek remove claudesp         # Uninstall
-
-claudesp                                                     # Run it
 ```
 
-## How it works
+## Where things live
 
 ```
-~/.claude-sneakpeek/
-└── claudesp/
-    ├── npm/               Claude Code installation (patched)
-    ├── config/            API keys, sessions, MCP servers
-    └── variant.json       Metadata
+~/.claude-sneakpeek/claudesp/
+├── npm/           # Patched Claude Code
+├── config/        # Isolated config, sessions, MCP servers
+└── variant.json
 
-~/.local/bin/claudesp      Wrapper script
+~/.local/bin/claudesp   # Wrapper script
 ```
-
-The wrapper is added to `~/.local/bin` (macOS/Linux) or `~/.claude-sneakpeek/bin` (Windows).
 
 ## Alternative providers
 
-claude-sneakpeek also supports alternative API providers (Z.ai, MiniMax, OpenRouter, etc.) inherited from cc-mirror. See [providers.md](docs/providers.md) for details.
+Supports Z.ai, MiniMax, OpenRouter, and local models via cc-mirror. See [docs/providers.md](docs/providers.md).
 
-## Related
+## Credits
 
-- [cc-mirror](https://github.com/anthropics/cc-mirror) — The upstream project
-- [tweakcc](https://github.com/Piebald-AI/tweakcc) — Theme customization for Claude Code
+Fork of [cc-mirror](https://github.com/numman-ali/cc-mirror) by Numman Ali.
 
 ## License
 
