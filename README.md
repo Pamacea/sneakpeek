@@ -5,7 +5,7 @@ A fork of [cc-mirror](https://github.com/anthropics/cc-mirror) that unlocks feat
 ## Install
 
 ```bash
-npx @realmikekelly/claude-sneakpeek quick --provider mirror --name claudesp
+npx @realmikekelly/claude-sneakpeek quick --name claudesp
 ```
 
 Run `claudesp` to launch Claude Code with unreleased features enabled.
@@ -23,11 +23,11 @@ Your main Claude Code installation stays untouched. Each sneakpeek variant is fu
 ## Commands
 
 ```bash
-npx @realmikekelly/claude-sneakpeek quick --provider mirror --name claudesp   # Install
-npx @realmikekelly/claude-sneakpeek update claudesp                           # Update to latest
-npx @realmikekelly/claude-sneakpeek remove claudesp                           # Uninstall
+npx @realmikekelly/claude-sneakpeek quick --name claudesp   # Install
+npx @realmikekelly/claude-sneakpeek update claudesp         # Update to latest
+npx @realmikekelly/claude-sneakpeek remove claudesp         # Uninstall
 
-claudesp                                                                       # Run it
+claudesp                                                     # Run it
 ```
 
 ## How it works
