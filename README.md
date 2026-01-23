@@ -1,137 +1,57 @@
 # claude-sneakpeek
 
-Isolated Claude Code installations with custom providers and themes.
+A fork of [cc-mirror](https://github.com/anthropics/cc-mirror) that unlocks feature-flagged capabilities in Claude Code.
 
 ## Install
 
 ```bash
-npx claude-sneakpeek quick --provider mirror --name claudesp
+npx @realmikekelly/claude-sneakpeek quick --provider mirror --name claudesp
 ```
 
-That's it. Now run `claudesp` to launch your isolated Claude Code.
+Run `claudesp` to launch Claude Code with unreleased features enabled.
 
----
+## What does it do?
 
-## What is claude-sneakpeek?
+claude-sneakpeek installs Claude Code and patches it to enable features that are built but not yet publicly released. Currently this includes:
 
-claude-sneakpeek creates isolated Claude Code installations. Each variant has its own config, sessions, MCP servers, and credentials. Your main Claude Code stays untouched.
+- **Swarm mode** — Native multi-agent orchestration with the `TeammateTool`
+- **Delegate mode** — Task tool can spawn agents in delegate mode
+- **Team coordination** — Teammate mailbox/messaging and task ownership
 
-```
-~/.claude-sneakpeek/
-├── claudesp/              ← Your variant
-│   ├── npm/               Claude Code installation
-│   ├── config/            API keys, sessions, MCP servers
-│   ├── tweakcc/           Theme customization
-│   └── variant.json       Metadata
-├── zai/                   ← Another variant (optional)
-└── minimax/               ← Another variant (optional)
-
-Wrapper: ~/.local/bin/claudesp
-```
-
-The wrapper command (`claudesp`) is added to `~/.local/bin` (macOS/Linux) or `~/.claude-sneakpeek/bin` (Windows).
-
----
-
-## Providers
-
-### Mirror (default)
-
-Uses the standard Anthropic API. Authenticate normally via OAuth or API key.
-
-```bash
-npx claude-sneakpeek quick --provider mirror --name claudesp
-```
-
-### Alternative Providers
-
-Use different model providers:
-
-| Provider       | Models                 | Auth       | Best For                        |
-| -------------- | ---------------------- | ---------- | ------------------------------- |
-| **Z.ai**       | GLM-4.7, GLM-4.5-Air   | API Key    | Heavy coding with GLM reasoning |
-| **MiniMax**    | MiniMax-M2.1           | API Key    | Unified model experience        |
-| **OpenRouter** | 100+ models            | Auth Token | Model flexibility, pay-per-use  |
-| **CCRouter**   | Ollama, DeepSeek, etc. | Optional   | Local-first development         |
-
-```bash
-# Z.ai (GLM Coding Plan)
-npx claude-sneakpeek quick --provider zai --api-key "$Z_AI_API_KEY"
-
-# MiniMax (MiniMax-M2.1)
-npx claude-sneakpeek quick --provider minimax --api-key "$MINIMAX_API_KEY"
-
-# OpenRouter (100+ models)
-npx claude-sneakpeek quick --provider openrouter --api-key "$OPENROUTER_API_KEY" \
-  --model-sonnet "anthropic/claude-sonnet-4-20250514"
-
-# Claude Code Router (local LLMs)
-npx claude-sneakpeek quick --provider ccrouter
-```
-
----
+Your main Claude Code installation stays untouched. Each sneakpeek variant is fully isolated with its own config, sessions, and credentials.
 
 ## Commands
 
 ```bash
-npx claude-sneakpeek                     # Interactive TUI
-npx claude-sneakpeek quick [options]     # Fast setup
-npx claude-sneakpeek list                # List variants
-npx claude-sneakpeek update [name]       # Update variant(s)
-npx claude-sneakpeek remove <name>       # Delete a variant
-npx claude-sneakpeek doctor              # Health check
+npx @realmikekelly/claude-sneakpeek quick --provider mirror --name claudesp   # Install
+npx @realmikekelly/claude-sneakpeek update claudesp                           # Update to latest
+npx @realmikekelly/claude-sneakpeek remove claudesp                           # Uninstall
 
-# Run your variant
-claudesp
+claudesp                                                                       # Run it
 ```
 
----
-
-## CLI Options
+## How it works
 
 ```
---provider <name>        mirror | zai | minimax | openrouter | ccrouter | custom
---name <name>            Variant name (becomes the CLI command)
---api-key <key>          Provider API key
---base-url <url>         Custom API endpoint
---model-sonnet <name>    Map to sonnet model
---model-opus <name>      Map to opus model
---model-haiku <name>     Map to haiku model
---brand <preset>         Theme: auto | zai | minimax | openrouter | ccrouter | mirror
---no-tweak               Skip tweakcc theme
---no-prompt-pack         Skip provider prompt pack
---verbose               Show full tweakcc output during update
+~/.claude-sneakpeek/
+└── claudesp/
+    ├── npm/               Claude Code installation (patched)
+    ├── config/            API keys, sessions, MCP servers
+    └── variant.json       Metadata
+
+~/.local/bin/claudesp      Wrapper script
 ```
 
----
+The wrapper is added to `~/.local/bin` (macOS/Linux) or `~/.claude-sneakpeek/bin` (Windows).
 
-## Brand Themes
+## Alternative providers
 
-Each provider includes a custom color theme via [tweakcc](https://github.com/Piebald-AI/tweakcc):
+claude-sneakpeek also supports alternative API providers (Z.ai, MiniMax, OpenRouter, etc.) inherited from cc-mirror. See [providers.md](docs/providers.md) for details.
 
-| Brand          | Style                            |
-| -------------- | -------------------------------- |
-| **mirror**     | Silver/chrome with electric blue |
-| **zai**        | Dark carbon with gold accents    |
-| **minimax**    | Coral/red/orange spectrum        |
-| **openrouter** | Teal/cyan gradient               |
-| **ccrouter**   | Sky blue accents                 |
+## Related
 
----
-
-## Documentation
-
-- [Mirror Claude](docs/features/mirror-claude.md) — Using the mirror provider
-- [Architecture](docs/architecture/overview.md) — How it works
-
----
-
-## Related Projects
-
-- [tweakcc](https://github.com/Piebald-AI/tweakcc) — Theme and customize Claude Code
-- [Claude Code Router](https://github.com/musistudio/claude-code-router) — Route Claude Code to any LLM
-
----
+- [cc-mirror](https://github.com/anthropics/cc-mirror) — The upstream project
+- [tweakcc](https://github.com/Piebald-AI/tweakcc) — Theme customization for Claude Code
 
 ## License
 

@@ -1,8 +1,8 @@
 {
-  "name": "claude-sneakpeek",
+  "name": "@realmikekelly/claude-sneakpeek",
   "version": "1.6.6",
   "type": "module",
-  "description": "Claude Code, Unshackled — Pre-configured variants with multi-agent orchestration, custom providers, and battle-tested enhancements",
+  "description": "Unlock feature-flagged capabilities in Claude Code",
   "author": "realmikekelly",
   "license": "MIT",
   "repository": {
