@@ -1,17 +1,17 @@
 {
-  "name": "cc-mirror",
+  "name": "claude-sneakpeek",
   "version": "1.6.6",
   "type": "module",
   "description": "Claude Code, Unshackled — Pre-configured variants with multi-agent orchestration, custom providers, and battle-tested enhancements",
-  "author": "Numman Ali",
+  "author": "realmikekelly",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/numman-ali/cc-mirror.git"
+    "url": "git+https://github.com/mikekelly/claude-sneakpeek.git"
   },
-  "homepage": "https://github.com/numman-ali/cc-mirror#readme",
+  "homepage": "https://github.com/mikekelly/claude-sneakpeek#readme",
   "bugs": {
-    "url": "https://github.com/numman-ali/cc-mirror/issues"
+    "url": "https://github.com/mikekelly/claude-sneakpeek/issues"
   },
   "keywords": [
     "claude",
@@ -28,7 +28,7 @@
     "llm"
   ],
   "bin": {
-    "cc-mirror": "./dist/cc-mirror.mjs"
+    "claude-sneakpeek": "./dist/claude-sneakpeek.mjs"
   },
   "files": [
     "dist"

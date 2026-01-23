@@ -309,7 +309,7 @@ async function handleNonInteractiveMode(opts: ParsedArgs, params: CreateParams):
 export async function runCreateCommand({ opts, quickMode }: CreateCommandOptions): Promise<void> {
   const params = await prepareCreateParams(opts);
   if (!core.TEAM_MODE_SUPPORTED && (opts['enable-team-mode'] || opts['disable-team-mode'])) {
-    console.log('Team mode flags are ignored in this release. Use cc-mirror 1.6.3 for team mode support.');
+    console.log('Team mode flags are ignored in this release. Use claude-sneakpeek 1.6.3 for team mode support.');
   }
 
   if (quickMode) {

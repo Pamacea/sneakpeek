@@ -100,16 +100,16 @@ Two execution backends for spawning teammates:
 | `CLAUDE_CODE_AGENT_NAME` | Human-readable agent name |
 | `CLAUDE_CODE_PLAN_MODE_REQUIRED` | Require plan approval from leader |
 
-## Implications for cc-mirror
+## Implications for claude-sneakpeek
 
-### What cc-mirror Should Do
+### What claude-sneakpeek Should Do
 
 1. **Version bump**: Use Claude Code 2.1.17+ to get native features
 2. **No patching needed**: Features are built-in, not patched like legacy team mode
 3. **Provider configuration**: Optionally set env vars to configure behavior
 4. **Documentation**: Help users understand feature availability
 
-### What cc-mirror Should NOT Do
+### What claude-sneakpeek Should NOT Do
 
 1. **Don't try to enable statsig flags** - Server-side, can't be overridden
 2. **Don't patch cli.js** - Features are native, not patched in
@@ -124,7 +124,7 @@ Two execution backends for spawning teammates:
 
 ## Patch Implementation
 
-cc-mirror implements swarm mode patching in `src/core/variant-builder/swarm-mode-patch.ts`:
+claude-sneakpeek implements swarm mode patching in `src/core/variant-builder/swarm-mode-patch.ts`:
 
 ```typescript
 import { setSwarmModeEnabled } from './swarm-mode-patch.js';
@@ -151,13 +151,13 @@ Patched function: function i8(){return!0}
 
 ```bash
 # Check if swarm gate is present in cli.js (unpatched)
-grep -o 'tengu_brass_pebble' ~/.cc-mirror/<variant>/npm/node_modules/@anthropic-ai/claude-code/cli.js
+grep -o 'tengu_brass_pebble' ~/.claude-sneakpeek/<variant>/npm/node_modules/@anthropic-ai/claude-code/cli.js
 
 # Check for TeammateTool
-grep -o 'TeammateTool' ~/.cc-mirror/<variant>/npm/node_modules/@anthropic-ai/claude-code/cli.js
+grep -o 'TeammateTool' ~/.claude-sneakpeek/<variant>/npm/node_modules/@anthropic-ai/claude-code/cli.js
 
 # Verify patch was applied (should return empty if patched)
-grep 'tengu_brass_pebble' ~/.cc-mirror/<variant>/npm/node_modules/@anthropic-ai/claude-code/cli.js
+grep 'tengu_brass_pebble' ~/.claude-sneakpeek/<variant>/npm/node_modules/@anthropic-ai/claude-code/cli.js
 ```
 
 ## See Also
