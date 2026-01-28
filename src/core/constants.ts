@@ -6,7 +6,7 @@ export const DEFAULT_BIN_DIR =
   process.platform === 'win32' ? path.join(DEFAULT_ROOT, 'bin') : path.join(os.homedir(), '.local', 'bin');
 export const TWEAKCC_VERSION = '3.2.2';
 export const DEFAULT_NPM_PACKAGE = '@anthropic-ai/claude-code';
-export const DEFAULT_NPM_VERSION = '2.1.19';
+export const DEFAULT_NPM_VERSION = '2.1.22';
 
 // Native multi-agent features (swarms, teammates) are available in Claude Code 2.1.16+
 // These are gated by statsig flag 'tengu_brass_pebble' and can be overridden with
