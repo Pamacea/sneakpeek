@@ -166,6 +166,29 @@ const upsertBlock = (content: string, block: string, shell: ShellType) => {
 };
 
 /**
+ * Parse a quoted string value, handling escaped quotes
+ * Supports: "value", 'value', "value\"with\"escapes", 'value\'with\'escapes'
+ */
+export const parseQuotedValue = (value: string): string | null => {
+  value = value.trim();
+  if (value.length < 2) return null;
+
+  const firstChar = value[0];
+  const lastChar = value[value.length - 1];
+
+  if ((firstChar === '"' && lastChar === '"') || (firstChar === "'" && lastChar === "'")) {
+    let inner = value.slice(1, -1);
+    // Handle escaped quotes: \" -> ", \' -> '
+    const escapeChar = firstChar; // " or '
+    inner = inner.replace(`\\${escapeChar}`, escapeChar);
+    return inner;
+  }
+
+  // Unquoted value
+  return value;
+};
+
+/**
  * Check if Z_AI_API_KEY is already set in the profile content
  */
 const hasZaiKeyInProfile = (content: string, shell: ShellType): boolean => {
@@ -180,22 +203,18 @@ const hasZaiKeyInProfile = (content: string, shell: ShellType): boolean => {
       if (!envStripped.startsWith('Z_AI_API_KEY')) continue;
       const equalsIndex = envStripped.indexOf('=');
       if (equalsIndex === -1) continue;
-      let value = envStripped.slice(equalsIndex + 1).trim();
-      if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
-        value = value.slice(1, -1);
-      }
-      if (normalizeApiKey(value)) return true;
+      const rawValue = envStripped.slice(equalsIndex + 1).trim();
+      const value = parseQuotedValue(rawValue);
+      if (value && normalizeApiKey(value)) return true;
     } else {
       // Handle Unix shell syntax: export Z_AI_API_KEY="value" or Z_AI_API_KEY="value"
       const exportStripped = trimmed.startsWith('export ') ? trimmed.slice(7).trim() : trimmed;
       if (!exportStripped.startsWith('Z_AI_API_KEY')) continue;
       const equalsIndex = exportStripped.indexOf('=');
       if (equalsIndex === -1) continue;
-      let value = exportStripped.slice(equalsIndex + 1).trim();
-      if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
-        value = value.slice(1, -1);
-      }
-      if (normalizeApiKey(value)) return true;
+      const rawValue = exportStripped.slice(equalsIndex + 1).trim();
+      const value = parseQuotedValue(rawValue);
+      if (value && normalizeApiKey(value)) return true;
     }
   }
   return false;
@@ -233,14 +252,13 @@ export const ensureZaiShellEnv = (opts: {
 
   const shell = opts.profilePath ? detectShellFromPath(opts.profilePath) : detectShell();
 
-  // Create directory if it doesn't exist (for PowerShell profiles)
+  // Create directory if needed (for PowerShell profiles)
+  // Note: recursive mkdirSync is safe to call without existence check
   const profileDir = path.dirname(profile);
-  if (!fs.existsSync(profileDir)) {
-    try {
-      fs.mkdirSync(profileDir, { recursive: true });
-    } catch {
-      // Ignore if directory creation fails
-    }
+  try {
+    fs.mkdirSync(profileDir, { recursive: true });
+  } catch {
+    // Ignore if directory creation fails (e.g., permissions)
   }
 
   const existing = fs.existsSync(profile) ? fs.readFileSync(profile, 'utf8') : '';

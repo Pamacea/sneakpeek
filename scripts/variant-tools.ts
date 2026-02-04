@@ -23,6 +23,8 @@ const repoRoot = path.resolve(__dirname, '..');
 // Types & Constants
 // ============================================================================
 
+const isWindows = process.platform === 'win32';
+
 interface BuildVariantsOptions {
   rootDir?: string;
   binDir?: string;
@@ -44,7 +46,9 @@ interface VariantInfo {
 }
 
 const DEFAULT_ROOT_DIR = path.join(os.homedir(), '.cc-mirror');
-const DEFAULT_BIN_DIR = path.join(os.homedir(), '.local', 'bin');
+const DEFAULT_BIN_DIR = isWindows
+  ? path.join(os.homedir(), '.claude-sneakpeek', 'bin')
+  : path.join(os.homedir(), '.local', 'bin');
 const ZAI_DEFAULT_BASE_URL = 'https://api.z.ai/api/anthropic';
 const MINIMAX_DEFAULT_BASE_URL = 'https://api.minimax.io/anthropic';
 const DEFAULT_TIMEOUT_MS = '3000000';
@@ -58,11 +62,76 @@ const COLORS = {
   cyan: '\x1b[36m',
 };
 
-const isWindows = process.platform === 'win32';
-
 // ============================================================================
 // Utilities
 // ============================================================================
+
+/**
+ * Validate that a path is within allowed boundaries and doesn't escape via symlinks
+ * Returns null if valid, error message otherwise
+ */
+const validatePath = (targetPath: string, allowedRoot?: string): string | null => {
+  try {
+    const resolved = fs.realpathSync(targetPath);
+    const normalized = path.normalize(targetPath);
+
+    // Check for obvious path traversal attempts
+    if (normalized.includes('..')) {
+      return `Path contains parent directory reference: ${targetPath}`;
+    }
+
+    // If allowed root specified, ensure resolved path is within it
+    if (allowedRoot) {
+      const resolvedRoot = fs.realpathSync(allowedRoot);
+      if (!resolved.startsWith(resolvedRoot)) {
+        return `Path is outside allowed root: ${targetPath}`;
+      }
+    }
+
+    return null;
+  } catch {
+    // Path doesn't exist yet, do basic string validation
+    const normalized = path.normalize(targetPath);
+    if (normalized.includes('..')) {
+      return `Path contains parent directory reference: ${targetPath}`;
+    }
+    return null;
+  }
+};
+
+/**
+ * Verify that a file is a valid Node.js executable
+ * Checks shebang and basic file properties
+ */
+const verifyNodeExecutable = (filePath: string): { ok: boolean; message?: string } => {
+  try {
+    const stat = fs.statSync(filePath);
+    if (!stat.isFile()) {
+      return { ok: false, message: `Not a regular file: ${filePath}` };
+    }
+
+    // Check first line for shebang
+    const fd = fs.openSync(filePath, 'r');
+    const buffer = Buffer.alloc(256);
+    fs.readSync(fd, buffer, 0, 256, 0);
+    fs.closeSync(fd);
+
+    const firstLine = buffer.toString('utf8', 0, buffer.indexOf('\n'));
+    if (!firstLine.startsWith('#!')) {
+      return { ok: false, message: 'Missing shebang, not a valid executable' };
+    }
+
+    // Check for node or bash in shebang
+    if (!firstLine.includes('node') && !firstLine.includes('bash')) {
+      return { ok: false, message: 'Invalid shebang, expected node or bash' };
+    }
+
+    return { ok: true };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    return { ok: false, message: `File verification failed: ${message}` };
+  }
+};
 
 const log = {
   info: (msg: string) => console.log(`${COLORS.blue}${msg}${COLORS.reset}`),
@@ -260,12 +329,7 @@ node "%~dp0${path.basename(scriptPath)}" %*
   fs.writeFileSync(cmdPath, cmdContent.replace(/\n/g, '\r\n'));
 };
 
-const writeWrapper = (
-  name: string,
-  binPath: string,
-  configDir: string,
-  binDir: string
-): void => {
+const writeWrapper = (name: string, binPath: string, configDir: string, binDir: string): void => {
   const wrapperPath = path.join(binDir, name);
 
   if (isWindows) {
@@ -286,6 +350,18 @@ const buildVariants = (opts: BuildVariantsOptions = {}): number => {
   const rootDir = opts.rootDir || process.env.CLAUDE_VARIANTS_ROOT || DEFAULT_ROOT_DIR;
   const binDir = opts.binDir || process.env.CLAUDE_VARIANTS_BIN_DIR || DEFAULT_BIN_DIR;
 
+  // Validate paths
+  const rootDirError = validatePath(rootDir);
+  if (rootDirError) {
+    log.error(`Error: Invalid root directory: ${rootDirError}`);
+    return 1;
+  }
+  const binDirError = validatePath(binDir);
+  if (binDirError) {
+    log.error(`Error: Invalid bin directory: ${binDirError}`);
+    return 1;
+  }
+
   // Find Claude binary
   let claudeOrig = opts.claudeOrig || process.env.CLAUDE_ORIG || '';
   if (!claudeOrig) {
@@ -301,7 +377,14 @@ const buildVariants = (opts: BuildVariantsOptions = {}): number => {
   }
 
   if (!fs.existsSync(claudeOrig)) {
-    log.error(`Error: CLAUDE_ORIG is not executable: ${claudeOrig}`);
+    log.error(`Error: CLAUDE_ORIG does not exist: ${claudeOrig}`);
+    return 1;
+  }
+
+  // Verify the binary is a valid executable
+  const verification = verifyNodeExecutable(claudeOrig);
+  if (!verification.ok) {
+    log.error(`Error: Invalid Claude binary: ${verification.message}`);
     return 1;
   }
 
@@ -335,11 +418,23 @@ const buildVariants = (opts: BuildVariantsOptions = {}): number => {
 
   log.info('Building claude-sneakpeek variants...');
 
-  // Copy binaries
+  // Copy binaries with verification
   log.plain('Copying binaries...');
   copyFile(claudeOrig, zaiBin);
   copyFile(claudeOrig, minimaxBin);
-  log.success('  Copied binaries');
+
+  // Verify copies
+  const zaiVerify = verifyNodeExecutable(zaiBin);
+  const minimaxVerify = verifyNodeExecutable(minimaxBin);
+  if (!zaiVerify.ok) {
+    log.error(`  Z.ai binary verification failed: ${zaiVerify.message}`);
+    return 1;
+  }
+  if (!minimaxVerify.ok) {
+    log.error(`  MiniMax binary verification failed: ${minimaxVerify.message}`);
+    return 1;
+  }
+  log.success('  Copied and verified binaries');
 
   // Write settings
   log.plain('Writing settings...');
@@ -402,14 +497,15 @@ const listVariants = (): number => {
     const configDir = path.join(dir, 'config');
     const cliPath = path.join(dir, 'npm', 'node_modules', '@anthropic-ai', 'claude-code', 'cli.js');
 
-    const variantMeta = path.join(dir, 'variant.json');
     let hasConfig = false;
     try {
       if (fs.existsSync(configDir)) {
         const settingsPath = path.join(configDir, 'settings.json');
         hasConfig = fs.existsSync(settingsPath);
       }
-    } catch {}
+    } catch {
+      // Ignore config read errors
+    }
 
     variants.push({
       name: entry.name,

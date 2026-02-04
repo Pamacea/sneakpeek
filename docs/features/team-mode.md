@@ -454,8 +454,8 @@ npx claude-sneakpeek tasks [operation] [id] [options]
 
 ### Operations
 
-| Operation | Command                            | Description                              |
-| --------- | ---------------------------------- | ---------------------------------------- |
+| Operation | Command                                   | Description                              |
+| --------- | ----------------------------------------- | ---------------------------------------- |
 | List      | `npx claude-sneakpeek tasks`              | List open tasks (default)                |
 | Show      | `npx claude-sneakpeek tasks show <id>`    | Show detailed task info                  |
 | Create    | `npx claude-sneakpeek tasks create`       | Create a new task                        |

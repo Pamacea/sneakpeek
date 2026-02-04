@@ -6,6 +6,16 @@ Demo video of swarm mode in action: https://x.com/NicerInPerson/status/201498967
 
 This installs a completely isolated instance of Claude Code—separate config, sessions, MCP servers, and credentials. Your existing Claude Code installation is untouched.
 
+## Security
+
+This project includes security-focused development practices:
+
+- **Git hooks**: Pre-commit typecheck, lint, and format validation via [Lefthook](https://lefthook.dev)
+- **Binary verification**: Validates copied binaries have proper shebangs before execution
+- **Path validation**: Prevents path traversal attacks in variant directories
+- **TOCTOU-safe**: Uses atomic directory creation without race conditions
+- **No credential leaks**: API key placeholders are never written to shell profiles
+
 ## Install
 
 ```bash
@@ -40,6 +50,7 @@ claudesp  # or claudesp.cmd
 ```
 
 **Windows Shell Support:**
+
 - **PowerShell** (5 or 7) - Fully supported for Z.ai environment setup
 - **Git Bash** - Supported if installed
 - **Command Prompt (cmd)** - Works but requires manual env var configuration
@@ -76,12 +87,26 @@ npx @oalacea/sneakpeek remove claudesp         # Uninstall
 ├── config/        # Isolated config, sessions, MCP servers
 └── variant.json
 
-~/.local/bin/claudesp   # Wrapper script
+~/.local/bin/claudesp   # Wrapper script (macOS/Linux)
+~/.claude-sneakpeek/bin/claudesp.cmd   # Wrapper script (Windows)
 ```
 
 ## Alternative providers
 
 Supports Z.ai, MiniMax, OpenRouter, and local models via cc-mirror. See [docs/providers.md](docs/providers.md).
+
+## Development
+
+```bash
+npm install          # Install dependencies
+npm run dev          # Run CLI from TypeScript sources
+npm test             # Run all tests
+npm run typecheck    # TypeScript check
+npm run lint         # ESLint check
+npm run format       # Prettier format
+```
+
+Git hooks are installed automatically on `npm install`. They run typecheck, lint, and format validation on every commit.
 
 ## Credits
 

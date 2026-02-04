@@ -63,12 +63,12 @@ dist/                       # Build output (generated)
 ## Build, Test, and Development Commands
 
 ```bash
-npm install          # Install dependencies
+npm install          # Install dependencies (installs git hooks via lefthook)
 npm run dev          # Run CLI from TypeScript sources
 npm run tui          # Launch TUI wizard
 npm test             # Run all tests
 npm run typecheck    # TypeScript check without emit
-npm run bundle       # Build dist/claude-sneakpeek.mjs
+npm run bundle       # Build dist/sneakpeek.mjs
 npm run render:tui-svg  # Regenerate docs/claude-sneakpeek-tree.svg
 ```
 
@@ -78,6 +78,42 @@ npm run render:tui-svg  # Regenerate docs/claude-sneakpeek-tree.svg
 - **Formatting**: 2-space indent, single quotes, semicolons
 - **Tests**: Name as `*.test.ts`, place in `test/` mirroring `src/` structure
 - **New files**: Place in relevant `src/<area>/` folder
+
+## Security Considerations
+
+### Git Hooks
+
+Pre-commit hooks are configured via `lefthook.yml` and automatically installed on `npm install`:
+
+- `typecheck` - TypeScript validation
+- `lint` - ESLint code quality checks
+- `format-check` - Prettier formatting validation
+
+### Binary Verification
+
+The `variant-tools.ts` script verifies that Claude binaries:
+
+- Have proper shebangs (`#!/usr/bin/env node` or `#!/usr/bin/env bash`)
+- Are regular files (not symlinks or directories)
+- Are readable before copying
+
+### Path Validation
+
+All user-provided paths are validated to prevent:
+
+- Path traversal attacks (via `..` components)
+- Symlink-based directory escapes
+- Writes outside expected directories
+
+### TOCTOU Safety
+
+Directory creation uses `fs.mkdirSync(dir, { recursive: true })` without prior `existsSync` check to prevent time-of-check-time-of-use race conditions.
+
+### API Key Handling
+
+- Placeholder keys (`<API_KEY>`, `<ZAI_API_KEY>`) are **never** written to shell profiles
+- The `normalizeApiKey()` function rejects placeholder values
+- Shell profile parsing handles escaped quotes to prevent malformed output
 
 ## Runtime Layout & Config Flow
 
@@ -89,7 +125,7 @@ npm run render:tui-svg  # Regenerate docs/claude-sneakpeek-tree.svg
 │   ├── settings.json       # Env overrides (API keys, base URLs, model defaults)
 │   ├── .claude.json        # API-key approvals + onboarding/theme + MCP servers
 │   ├── tasks/<team>/       # Team mode task storage (JSON files)
-│   └── skills/             # Installed skills (orchestrator)
+│   └── skills/             # Installed skills (orchestrator, task-manager)
 ├── tweakcc/
 │   ├── config.json         # Brand preset + theme list + toolsets
 │   └── system-prompts/     # Prompt-pack overlays (after tweakcc apply)
@@ -129,7 +165,21 @@ Default `<bin-dir>` is `~/.local/bin` on macOS/Linux and `~/.claude-sneakpeek/bi
 
 **Legacy notice:** Team mode is only supported in the published claude-sneakpeek **1.6.3** release. Current development builds do not patch Claude Code; focus is provider enablement and stable updates.
 
-Team mode patches `cli.js` to enable Task\* tools for multi-agent collaboration.
+### Orchestration Skills
+
+The following skills are bundled with sneakpeek but **NOT installed by default**:
+
+- **`orchestration`** - Multi-agent orchestration skill (`src/skills/orchestration/`)
+- **`task-manager`** - Task management skill (`src/skills/task-manager/`)
+
+These are only installed when:
+
+1. User passes `--enable-team-mode` flag during variant creation
+2. Provider has `enablesTeamMode: true` in its configuration
+
+**Installation location**: `~/.claude-sneakpeek/<variant>/config/skills/<skill-name>/`
+
+**Managed marker**: Skills installed by sneakpeek include a `.claude-sneakpeek-managed` file to track ownership. User-managed skills are never overwritten.
 
 ### How It Works
 
@@ -161,8 +211,9 @@ This ensures tasks are isolated per-project. The variant name is NOT included in
 ### Team Mode Components
 
 1. **cli.js patch**: Enables TaskCreate, TaskGet, TaskUpdate, TaskList tools
-2. **Orchestrator skill**: Installed to `config/skills/orchestration/`
-3. **Team Pack**: Prompt files + toolset config (blocks TodoWrite, merges provider blocked tools)
+2. **Orchestrator skill**: Installed to `config/skills/orchestration/` (when --enable-team-mode)
+3. **Task-manager skill**: Installed to `config/skills/task-manager/` (when --enable-team-mode)
+4. **Team Pack**: Prompt files + toolset config (blocks TodoWrite, merges provider blocked tools)
 
 ### Agent Identity Env Vars
 
@@ -246,6 +297,9 @@ grep "function sU(){return" ~/.claude-sneakpeek/<variant>/npm/node_modules/@anth
 # Should show: function sU(){return!0}  (enabled)
 # Not: function sU(){return!1}  (disabled)
 
+# Check if orchestrator skill is installed
+ls ~/.claude-sneakpeek/<variant>/config/skills/
+
 # List team tasks
 ls ~/.claude-sneakpeek/<variant>/config/tasks/<team_name>/
 ```
@@ -253,7 +307,7 @@ ls ~/.claude-sneakpeek/<variant>/config/tasks/<team_name>/
 ### Health Check
 
 ```bash
-npx claude-sneakpeek doctor
+npx @oalacea/sneakpeek doctor
 ```
 
 ### Reference Files
@@ -299,7 +353,7 @@ Requires `Z_AI_API_KEY` in environment.
 2. Verify `variant.json` exists
 3. Verify `.claude.json` has `hasCompletedOnboarding` + `theme`
 4. Run wrapper in TTY and confirm splash + no onboarding prompt
-5. Use `npx claude-sneakpeek update test-zai` to validate update flow
+5. Use `npm run dev -- update test-zai` to validate update flow
 
 ## Testing
 
@@ -314,6 +368,7 @@ Key test files:
 - `test/e2e/creation.test.ts` - Variant creation for all providers
 - `test/e2e/team-mode.test.ts` - Team mode + team pack
 - `test/e2e/blocked-tools.test.ts` - Provider blocked tools
+- `test/unit/shell-env.test.ts` - Shell environment parsing with escaped quotes
 - `test/tui/*.test.tsx` - TUI component tests
 
 ## Architecture Notes

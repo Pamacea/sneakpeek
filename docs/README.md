@@ -25,20 +25,20 @@
 
 ### 🤖 Features
 
-| Document                                   | Description                          |
-| ------------------------------------------ | ------------------------------------ |
-| [Team Mode](features/team-mode.md)         | Legacy team mode (claude-sneakpeek 1.6.3)   |
-| [Mirror Claude](features/mirror-claude.md) | Pure Claude Code with clean defaults |
-| [Brand Themes](features/brand-themes.md)   | Custom color schemes per provider    |
-| [Prompt Packs](features/prompt-packs.md)   | Enhanced system prompts              |
+| Document                                   | Description                               |
+| ------------------------------------------ | ----------------------------------------- |
+| [Team Mode](features/team-mode.md)         | Legacy team mode (claude-sneakpeek 1.6.3) |
+| [Mirror Claude](features/mirror-claude.md) | Pure Claude Code with clean defaults      |
+| [Brand Themes](features/brand-themes.md)   | Custom color schemes per provider         |
+| [Prompt Packs](features/prompt-packs.md)   | Enhanced system prompts                   |
 
 ### 🏗️ Architecture
 
-| Document                                               | Description                        |
-| ------------------------------------------------------ | ---------------------------------- |
+| Document                                               | Description                               |
+| ------------------------------------------------------ | ----------------------------------------- |
 | [Overview](architecture/overview.md)                   | How claude-sneakpeek works under the hood |
-| [Provider System](architecture/provider-system.md)     | Adding and configuring providers   |
-| [Variant Lifecycle](architecture/variant-lifecycle.md) | Create, update, and remove flows   |
+| [Provider System](architecture/provider-system.md)     | Adding and configuring providers          |
+| [Variant Lifecycle](architecture/variant-lifecycle.md) | Create, update, and remove flows          |
 
 ### 🔧 Reference
 

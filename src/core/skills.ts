@@ -102,7 +102,8 @@ const downloadArchiveNative = async (targetDir: string): Promise<{ ok: boolean; 
   }
 };
 
-const downloadArchiveSync = (targetDir: string): { ok: boolean; message?: string } => {
+// Unused sync variant kept for potential future use
+const _downloadArchiveSync = (targetDir: string): { ok: boolean; message?: string } => {
   // Try curl/tar first (faster for systems that have them)
   const curlResult = downloadArchive(targetDir);
   if (curlResult.ok) return curlResult;
@@ -118,6 +119,10 @@ const downloadArchiveSync = (targetDir: string): { ok: boolean; message?: string
 
   return curlResult;
 };
+
+/**
+ * @deprecated Use downloadArchiveAsync instead. Kept for compatibility.
+ */
 
 export const ensureDevBrowserSkill = (opts: {
   install: boolean;

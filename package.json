@@ -1,6 +1,6 @@
 {
   "name": "@oalacea/sneakpeek",
-  "version": "1.6.10",
+  "version": "1.6.20",
   "type": "module",
   "description": "Unlock feature-flagged capabilities in Claude Code",
   "author": "oalacea",
@@ -48,7 +48,7 @@
     "format": "prettier --write \"**/*.{ts,tsx,json,md}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,json,md}\"",
     "check": "npm run typecheck && npm run lint && npm run test:coverage && npm run bundle",
-    "prepare": "lefthook install || true",
+    "prepare": "lefthook install",
     "variants:build": "tsx scripts/variant-tools.ts build-variants",
     "variants:list": "tsx scripts/variant-tools.ts list-variants",
     "variants:team-mode": "tsx scripts/variant-tools.ts enable-team-mode"
