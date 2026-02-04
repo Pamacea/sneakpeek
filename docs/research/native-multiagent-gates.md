@@ -16,11 +16,12 @@ In the minified CLI, **all** multi-agent features are gated by a single function
 ```javascript
 function i8() {
   if (Yz(process.env.CLAUDE_CODE_AGENT_SWARMS)) return !1;
-  return xK("tengu_brass_pebble", !1);
+  return xK('tengu_brass_pebble', !1);
 }
 ```
 
 Where:
+
 - `Yz()` - Evaluates env var as "falsey" (handles string "false", "0", empty, etc.)
 - `xK()` - Checks statsig feature flag with a default value
 
@@ -30,23 +31,28 @@ The gate function can be patched to bypass the statsig check entirely:
 
 ```javascript
 // Before patch:
-function i8(){if(Yz(process.env.CLAUDE_CODE_AGENT_SWARMS))return!1;return xK("tengu_brass_pebble",!1)}
+function i8() {
+  if (Yz(process.env.CLAUDE_CODE_AGENT_SWARMS)) return !1;
+  return xK('tengu_brass_pebble', !1);
+}
 
 // After patch:
-function i8(){return!0}
+function i8() {
+  return !0;
+}
 ```
 
 This is the same approach used for legacy team mode patching.
 
 ### Features Controlled by i8()
 
-| Feature | Code Pattern | Description |
-|---------|--------------|-------------|
-| **TeammateTool** | `i8()?[tq2()]:[]` | Tool conditionally included in toolset |
-| **Delegate mode** | `i8()?["bypassPermissions"]:["bypassPermissions","delegate"]` | Task tool mode option |
-| **Swarm spawning** | `i8()` check in ExitPlanMode | launchSwarm + teammateCount params |
-| **Teammate mailbox** | `i8()?[yw("teammate_mailbox",...)]` | Inter-agent messaging |
-| **Task teammates** | `i8()&&H?.teammates` | Task list teammate display |
+| Feature              | Code Pattern                                                  | Description                            |
+| -------------------- | ------------------------------------------------------------- | -------------------------------------- |
+| **TeammateTool**     | `i8()?[tq2()]:[]`                                             | Tool conditionally included in toolset |
+| **Delegate mode**    | `i8()?["bypassPermissions"]:["bypassPermissions","delegate"]` | Task tool mode option                  |
+| **Swarm spawning**   | `i8()` check in ExitPlanMode                                  | launchSwarm + teammateCount params     |
+| **Teammate mailbox** | `i8()?[yw("teammate_mailbox",...)]`                           | Inter-agent messaging                  |
+| **Task teammates**   | `i8()&&H?.teammates`                                          | Task list teammate display             |
 
 **One patch enables all features.**
 
@@ -57,6 +63,7 @@ Set `CLAUDE_CODE_AGENT_SWARMS=0` or `CLAUDE_CODE_AGENT_SWARMS=false` to **disabl
 ### Statsig Flag
 
 The `tengu_brass_pebble` flag is checked server-side. Without patching, enablement depends on:
+
 - Subscription tier (Max, Team, Pro)
 - Account age / feature rollout
 - Geographic availability
@@ -66,6 +73,7 @@ The `tengu_brass_pebble` flag is checked server-side. Without patching, enableme
 ### TeammateTool
 
 Available operations:
+
 - `spawnTeam` - Create a new team (team = project = task list)
 - `approvePlan` - Approve a teammate's plan
 - `rejectPlan` - Reject a teammate's plan with feedback
@@ -74,6 +82,7 @@ Available operations:
 ### ExitPlanMode Swarm Parameters
 
 When `i8()` returns true, ExitPlanMode accepts:
+
 - `launchSwarm: boolean` - Enable swarm spawning
 - `teammateCount: number` - Number of teammates to spawn (1-5)
 
@@ -91,14 +100,14 @@ Two execution backends for spawning teammates:
 
 ### Related Environment Variables
 
-| Variable | Purpose |
-|----------|---------|
-| `CLAUDE_CODE_AGENT_SWARMS` | Override swarm feature gate (set to 0/false to disable) |
-| `CLAUDE_CODE_TEAM_MODE` | Enable team mode |
-| `CLAUDE_CODE_TEAM_NAME` | Set team name (set by wrapper at runtime) |
-| `CLAUDE_CODE_AGENT_ID` | Unique agent identifier |
-| `CLAUDE_CODE_AGENT_NAME` | Human-readable agent name |
-| `CLAUDE_CODE_PLAN_MODE_REQUIRED` | Require plan approval from leader |
+| Variable                         | Purpose                                                 |
+| -------------------------------- | ------------------------------------------------------- |
+| `CLAUDE_CODE_AGENT_SWARMS`       | Override swarm feature gate (set to 0/false to disable) |
+| `CLAUDE_CODE_TEAM_MODE`          | Enable team mode                                        |
+| `CLAUDE_CODE_TEAM_NAME`          | Set team name (set by wrapper at runtime)               |
+| `CLAUDE_CODE_AGENT_ID`           | Unique agent identifier                                 |
+| `CLAUDE_CODE_AGENT_NAME`         | Human-readable agent name                               |
+| `CLAUDE_CODE_PLAN_MODE_REQUIRED` | Require plan approval from leader                       |
 
 ## Implications for claude-sneakpeek
 
@@ -117,10 +126,10 @@ Two execution backends for spawning teammates:
 
 ## Version History
 
-| Version | Features Added |
-|---------|----------------|
-| 2.1.16 | Initial native multi-agent support |
-| 2.1.17 | TeammateTool, swarm spawning refinements |
+| Version | Features Added                           |
+| ------- | ---------------------------------------- |
+| 2.1.16  | Initial native multi-agent support       |
+| 2.1.17  | TeammateTool, swarm spawning refinements |
 
 ## Patch Implementation
 

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { ensureZaiShellEnv, detectShell } from '../src/core/shell-env.js';
+import { ensureZaiShellEnv, detectShell, parseQuotedValue } from '../src/core/shell-env.js';
 
 delete process.env.Z_AI_API_KEY;
 
@@ -121,6 +121,8 @@ test('ensureZaiShellEnv creates PowerShell profile directory if missing', () => 
 
     // Directory should be created
     assert.ok(fs.existsSync(powerShellDir));
+    // Result should indicate update or skipped (not failed)
+    assert.ok(result.status === 'updated' || result.status === 'skipped');
   } finally {
     Object.defineProperty(process, 'platform', { value: originalPlatform });
     if (originalPSModulePath === undefined) {
@@ -129,4 +131,34 @@ test('ensureZaiShellEnv creates PowerShell profile directory if missing', () => 
       process.env.PSModulePath = originalPSModulePath;
     }
   }
+});
+
+// Quoted value parsing tests
+
+test('parseQuotedValue handles double quotes', () => {
+  assert.equal(parseQuotedValue('"test-key"'), 'test-key');
+});
+
+test('parseQuotedValue handles single quotes', () => {
+  assert.equal(parseQuotedValue("'test-key'"), 'test-key');
+});
+
+test('parseQuotedValue handles escaped double quotes', () => {
+  assert.equal(parseQuotedValue('"test\\"key\\"test"'), 'test"key"test');
+});
+
+test('parseQuotedValue handles escaped single quotes', () => {
+  assert.equal(parseQuotedValue("'test\\'key\\'test'"), "test'key'test");
+});
+
+test('parseQuotedValue returns unquoted value as-is', () => {
+  assert.equal(parseQuotedValue('test-key'), 'test-key');
+});
+
+test('parseQuotedValue returns null for empty string', () => {
+  assert.equal(parseQuotedValue(''), null);
+});
+
+test('parseQuotedValue returns null for single quote', () => {
+  assert.equal(parseQuotedValue('"'), null);
 });
