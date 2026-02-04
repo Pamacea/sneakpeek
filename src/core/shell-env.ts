@@ -179,8 +179,9 @@ export const parseQuotedValue = (value: string): string | null => {
   if ((firstChar === '"' && lastChar === '"') || (firstChar === "'" && lastChar === "'")) {
     let inner = value.slice(1, -1);
     // Handle escaped quotes: \" -> ", \' -> '
+    // Use replaceAll to handle all occurrences
     const escapeChar = firstChar; // " or '
-    inner = inner.replace(`\\${escapeChar}`, escapeChar);
+    inner = inner.replaceAll(`\\${escapeChar}`, escapeChar);
     return inner;
   }
 
