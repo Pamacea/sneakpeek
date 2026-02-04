@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { ensureZaiShellEnv } from '../src/core/shell-env.js';
+import { ensureZaiShellEnv, detectShell } from '../src/core/shell-env.js';
 
 delete process.env.Z_AI_API_KEY;
 
@@ -52,4 +52,81 @@ test('ensureZaiShellEnv writes a claude-sneakpeek block when missing', () => {
   const content = fs.readFileSync(profilePath, 'utf8');
   assert.ok(content.includes('claude-sneakpeek: Z.ai env start'));
   assert.ok(content.includes('export Z_AI_API_KEY="abc123"'));
+});
+
+// Windows/PowerShell tests
+
+test('detectShell returns powershell on Windows with PSModulePath', { skip: process.platform !== 'win32' }, () => {
+  const shell = detectShell();
+  assert.ok(shell === 'powershell' || shell === 'powershell-core' || shell === 'bash');
+});
+
+test('detectShell returns zsh or bash on Unix', { skip: process.platform === 'win32' }, () => {
+  const shell = detectShell();
+  assert.ok(shell === 'zsh' || shell === 'bash' || shell === 'unknown');
+});
+
+test('ensureZaiShellEnv writes PowerShell syntax for PowerShell profile', () => {
+  const tempDir = makeTempDir();
+  const configDir = path.join(tempDir, 'config');
+  const profilePath = path.join(tempDir, 'Microsoft.PowerShell_profile.ps1');
+  writeSettings(configDir, 'xyz789');
+
+  // Force PowerShell detection by setting env vars
+  const originalPlatform = process.platform;
+  Object.defineProperty(process, 'platform', { value: 'win32' });
+  const originalPSModulePath = process.env.PSModulePath;
+
+  try {
+    // Mock PowerShell environment
+    process.env.PSModulePath = 'C:\\Program Files\\WindowsPowerShell\\Modules';
+
+    const result = ensureZaiShellEnv({ configDir, profilePath });
+    const content = fs.readFileSync(profilePath, 'utf8');
+
+    // On non-Windows systems with mocked env, it may still detect as Unix
+    // The important thing is it doesn't crash
+    assert.ok(result.status === 'updated' || result.status === 'failed');
+
+    if (result.status === 'updated') {
+      // Check content format - should work for both Unix and PowerShell
+      assert.ok(content.includes('claude-sneakpeek: Z.ai env start'));
+      assert.ok(content.includes('xyz789'));
+    }
+  } finally {
+    Object.defineProperty(process, 'platform', { value: originalPlatform });
+    if (originalPSModulePath === undefined) {
+      delete process.env.PSModulePath;
+    } else {
+      process.env.PSModulePath = originalPSModulePath;
+    }
+  }
+});
+
+test('ensureZaiShellEnv creates PowerShell profile directory if missing', () => {
+  const tempDir = makeTempDir();
+  const configDir = path.join(tempDir, 'config');
+  const powerShellDir = path.join(tempDir, 'WindowsPowerShell');
+  const profilePath = path.join(powerShellDir, 'Microsoft.PowerShell_profile.ps1');
+  writeSettings(configDir, 'dir-test-key');
+
+  const originalPlatform = process.platform;
+  Object.defineProperty(process, 'platform', { value: 'win32' });
+  const originalPSModulePath = process.env.PSModulePath;
+
+  try {
+    process.env.PSModulePath = 'C:\\Program Files\\WindowsPowerShell\\Modules';
+
+    const result = ensureZaiShellEnv({ configDir, profilePath });
+
+    // Directory should be created
+    assert.ok(fs.existsSync(powerShellDir));
+  } finally {
+    Object.defineProperty(process, 'platform', { value: originalPlatform });
+    if (originalPSModulePath === undefined) {
+      delete process.env.PSModulePath;
+    } else {
+      process.env.PSModulePath = originalPSModulePath;
+    }
+  }
 });

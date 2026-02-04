@@ -1,17 +1,17 @@
 {
-  "name": "@realmikekelly/claude-sneakpeek",
+  "name": "@oalacea/sneakpeek",
   "version": "1.6.10",
   "type": "module",
   "description": "Unlock feature-flagged capabilities in Claude Code",
-  "author": "realmikekelly",
+  "author": "oalacea",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/mikekelly/claude-sneakpeek.git"
+    "url": "git+https://github.com/oalacea/sneakpeek.git"
   },
-  "homepage": "https://github.com/mikekelly/claude-sneakpeek#readme",
+  "homepage": "https://github.com/oalacea/sneakpeek#readme",
   "bugs": {
-    "url": "https://github.com/mikekelly/claude-sneakpeek/issues"
+    "url": "https://github.com/oalacea/sneakpeek/issues"
   },
   "keywords": [
     "claude",
@@ -28,7 +28,7 @@
     "llm"
   ],
   "bin": {
-    "claude-sneakpeek": "dist/claude-sneakpeek.mjs"
+    "sneakpeek": "dist/sneakpeek.mjs"
   },
   "files": [
     "dist"
@@ -48,13 +48,17 @@
     "format": "prettier --write \"**/*.{ts,tsx,json,md}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,json,md}\"",
     "check": "npm run typecheck && npm run lint && npm run test:coverage && npm run bundle",
-    "prepare": "lefthook install || true"
+    "prepare": "lefthook install || true",
+    "variants:build": "tsx scripts/variant-tools.ts build-variants",
+    "variants:list": "tsx scripts/variant-tools.ts list-variants",
+    "variants:team-mode": "tsx scripts/variant-tools.ts enable-team-mode"
   },
   "dependencies": {
     "ink": "^6.6.0",
     "ink-select-input": "^6.2.0",
     "ink-text-input": "^6.0.0",
     "react": "^19.2.3",
+    "tar": "^7.4.3",
     "tweakcc": "^3.2.3"
   },
   "devDependencies": {

@@ -3,7 +3,8 @@ import os from 'node:os';
 import path from 'node:path';
 import { spawn, spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { commandExists } from './paths.js';
+import * as tar from 'tar';
+import { commandExists, isWindows } from './paths.js';
 
 export type SkillInstallStatus = 'installed' | 'updated' | 'skipped' | 'failed';
 
@@ -60,6 +61,62 @@ const downloadArchive = (targetDir: string): { ok: boolean; message?: string } =
     return { ok: false, message: tarResult.stderr?.trim() || 'tar extract failed' };
   }
   return { ok: true };
+};
+
+/**
+ * Native Node.js download using fetch and tar extraction.
+ * Cross-platform fallback when curl/tar are not available (especially on Windows).
+ */
+const downloadArchiveNative = async (targetDir: string): Promise<{ ok: boolean; message?: string }> => {
+  try {
+    const archivePath = path.join(targetDir, 'dev-browser.tar.gz');
+
+    // Download using fetch (available in Node 18+)
+    const response = await fetch(DEV_BROWSER_ARCHIVE);
+    if (!response.ok) {
+      return { ok: false, message: `HTTP ${response.status}: ${response.statusText}` };
+    }
+
+    // Write the downloaded file
+    const buffer = await response.arrayBuffer();
+    fs.writeFileSync(archivePath, new Uint8Array(buffer));
+
+    // Extract using tar library (cross-platform)
+    // tar.x automatically handles .gz files
+    await tar.x({
+      file: archivePath,
+      cwd: targetDir,
+    });
+
+    // Clean up archive
+    try {
+      fs.unlinkSync(archivePath);
+    } catch {
+      // Ignore cleanup errors
+    }
+
+    return { ok: true };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    return { ok: false, message: `native download failed: ${message}` };
+  }
+};
+
+const downloadArchiveSync = (targetDir: string): { ok: boolean; message?: string } => {
+  // Try curl/tar first (faster for systems that have them)
+  const curlResult = downloadArchive(targetDir);
+  if (curlResult.ok) return curlResult;
+
+  // On Windows or without curl/tar, we need to use async method
+  // Since we're in sync context, return appropriate message
+  if (isWindows) {
+    return {
+      ok: false,
+      message: 'curl/tar not available. Use async install or install Git for Windows which provides curl/tar.',
+    };
+  }
+
+  return curlResult;
 };
 
 export const ensureDevBrowserSkill = (opts: {
@@ -336,13 +393,16 @@ const cloneRepoAsync = async (targetDir: string): Promise<{ ok: boolean; message
 };
 
 const downloadArchiveAsync = async (targetDir: string): Promise<{ ok: boolean; message?: string }> => {
-  if (!commandExists('curl') || !commandExists('tar')) {
-    return { ok: false, message: 'curl or tar not found' };
+  // Try curl/tar first if available (faster for systems that have them)
+  if (commandExists('curl') && commandExists('tar')) {
+    const archivePath = path.join(targetDir, 'dev-browser.tar.gz');
+    const curlResult = await spawnAsync('curl', ['-L', '-o', archivePath, DEV_BROWSER_ARCHIVE]);
+    if (!curlResult.ok) return curlResult;
+    return spawnAsync('tar', ['-xzf', archivePath, '-C', targetDir]);
   }
-  const archivePath = path.join(targetDir, 'dev-browser.tar.gz');
-  const curlResult = await spawnAsync('curl', ['-L', '-o', archivePath, DEV_BROWSER_ARCHIVE]);
-  if (!curlResult.ok) return curlResult;
-  return spawnAsync('tar', ['-xzf', archivePath, '-C', targetDir]);
+
+  // Fallback to native Node.js download (cross-platform, works on Windows)
+  return downloadArchiveNative(targetDir);
 };
 
 export const ensureDevBrowserSkillAsync = async (opts: {

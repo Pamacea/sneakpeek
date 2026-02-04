@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { readJson } from './fs.js';
+import { isWindows } from './paths.js';
 
 type SettingsFile = {
   env?: Record<string, string | number | undefined>;
@@ -15,9 +16,13 @@ export interface ShellEnvResult {
   path?: string;
 }
 
+export type ShellType = 'zsh' | 'bash' | 'powershell' | 'powershell-core' | 'unknown';
+
 const SETTINGS_FILE = 'settings.json';
-const BLOCK_START = '# claude-sneakpeek: Z.ai env start';
-const BLOCK_END = '# claude-sneakpeek: Z.ai env end';
+const BLOCK_START_UNIX = '# claude-sneakpeek: Z.ai env start';
+const BLOCK_END_UNIX = '# claude-sneakpeek: Z.ai env end';
+const BLOCK_START_POWERSHELL = '# claude-sneakpeek: Z.ai env start';
+const BLOCK_END_POWERSHELL = '# claude-sneakpeek: Z.ai env end';
 const PLACEHOLDER_KEY = '<API_KEY>';
 
 const normalizeApiKey = (value?: string | null): string | null => {
@@ -27,21 +32,94 @@ const normalizeApiKey = (value?: string | null): string | null => {
   return trimmed;
 };
 
-const resolveShellProfile = (): string | null => {
-  const home = os.homedir();
+/**
+ * Detect the current shell type
+ */
+export const detectShell = (): ShellType => {
+  if (isWindows) {
+    // Check for PowerShell Core (pwsh) or Windows PowerShell (powershell)
+    if (process.env.PSModulePath) {
+      return process.env.PWSH ? 'powershell-core' : 'powershell';
+    }
+    // Check for Git Bash on Windows
+    if (process.env.SHELL && process.env.SHELL.includes('bash')) {
+      return 'bash';
+    }
+    return 'unknown';
+  }
+
+  // Unix-like systems
   const shell = process.env.SHELL || '';
   const name = path.basename(shell);
 
-  if (name === 'zsh') {
-    return path.join(home, '.zshrc');
+  if (name === 'zsh') return 'zsh';
+  if (name === 'bash') return 'bash';
+  return 'unknown';
+};
+
+/**
+ * Resolve the shell profile file path based on the detected shell
+ */
+const resolveShellProfile = (): string | null => {
+  const home = os.homedir();
+  const shell = detectShell();
+
+  if (shell === 'powershell' || shell === 'powershell-core') {
+    // PowerShell 5 (Windows PowerShell) or PowerShell 7 (Core)
+    // Profile path can be in different locations depending on PowerShell version
+    // Use $PROFILE variable if set, otherwise default to standard locations
+    const profileEnv = process.env.PROFILE;
+    if (profileEnv && fs.existsSync(profileEnv)) return profileEnv;
+
+    // Default PowerShell profile paths
+    const documentsPath = path.join(home, 'Documents');
+    const psPath = path.join(documentsPath, 'WindowsPowerShell');
+    const ps7Path = path.join(documentsPath, 'PowerShell');
+
+    // Try PowerShell 7 profile first (if Core detected)
+    if (shell === 'powershell-core') {
+      const profile = path.join(ps7Path, 'Microsoft.PowerShell_profile.ps1');
+      if (fs.existsSync(profile)) return profile;
+      // Return default even if doesn't exist - we'll create the directory
+      return profile;
+    }
+
+    // Try Windows PowerShell profile
+    const profile = path.join(psPath, 'Microsoft.PowerShell_profile.ps1');
+    if (fs.existsSync(profile)) return profile;
+    return profile;
   }
-  if (name === 'bash') {
+
+  if (shell === 'bash') {
     const bashrc = path.join(home, '.bashrc');
     if (fs.existsSync(bashrc)) return bashrc;
     return path.join(home, '.bash_profile');
   }
 
+  if (shell === 'zsh') {
+    return path.join(home, '.zshrc');
+  }
+
   return null;
+};
+
+/**
+ * Detect shell type from profile file path
+ */
+const detectShellFromPath = (profilePath: string): ShellType => {
+  const basename = path.basename(profilePath);
+
+  // PowerShell profiles
+  if (basename.endsWith('.ps1')) {
+    return 'powershell';
+  }
+
+  // Unix shells
+  if (basename === '.zshrc') return 'zsh';
+  if (basename === '.bashrc' || basename === '.bash_profile') return 'bash';
+
+  // Default to unknown - will use environment detection
+  return 'unknown';
 };
 
 const readSettingsApiKey = (configDir: string): string | null => {
@@ -53,37 +131,80 @@ const readSettingsApiKey = (configDir: string): string | null => {
   return normalizeApiKey(key);
 };
 
-const renderBlock = (apiKey: string) => `${BLOCK_START}\nexport Z_AI_API_KEY="${apiKey}"\n${BLOCK_END}\n`;
+/**
+ * Render the environment variable block for the detected shell type
+ */
+const renderBlock = (apiKey: string, shell: ShellType): string => {
+  if (shell === 'powershell' || shell === 'powershell-core') {
+    // PowerShell syntax: $env:VARIABLE = "value"
+    return `${BLOCK_START_POWERSHELL}\n$env:Z_AI_API_KEY="${apiKey}"\n${BLOCK_END_POWERSHELL}\n`;
+  }
+  // Unix shells: export VARIABLE="value"
+  return `${BLOCK_START_UNIX}\nexport Z_AI_API_KEY="${apiKey}"\n${BLOCK_END_UNIX}\n`;
+};
 
-const upsertBlock = (content: string, block: string) => {
-  if (content.includes(BLOCK_START) && content.includes(BLOCK_END)) {
-    const start = content.indexOf(BLOCK_START);
-    const end = content.indexOf(BLOCK_END, start);
-    const before = content.slice(0, start).trimEnd();
-    const after = content.slice(end + BLOCK_END.length).trimStart();
+/**
+ * Get block markers for the detected shell type
+ */
+const getBlockMarkers = (shell: ShellType) => {
+  if (shell === 'powershell' || shell === 'powershell-core') {
+    return { start: BLOCK_START_POWERSHELL, end: BLOCK_END_POWERSHELL };
+  }
+  return { start: BLOCK_START_UNIX, end: BLOCK_END_UNIX };
+};
+
+const upsertBlock = (content: string, block: string, shell: ShellType) => {
+  const { start, end } = getBlockMarkers(shell);
+  if (content.includes(start) && content.includes(end)) {
+    const startIndex = content.indexOf(start);
+    const endIndex = content.indexOf(end, startIndex);
+    const before = content.slice(0, startIndex).trimEnd();
+    const after = content.slice(endIndex + end.length).trimStart();
     return `${before}\n\n${block}\n${after}`.trimEnd() + '\n';
   }
   return `${content.trimEnd()}\n\n${block}`.trimEnd() + '\n';
 };
 
-const hasZaiKeyInProfile = (content: string): boolean => {
+/**
+ * Check if Z_AI_API_KEY is already set in the profile content
+ */
+const hasZaiKeyInProfile = (content: string, shell: ShellType): boolean => {
   const lines = content.split('\n');
   for (const line of lines) {
     const trimmed = line.trim();
     if (!trimmed || trimmed.startsWith('#')) continue;
-    const exportStripped = trimmed.startsWith('export ') ? trimmed.slice(7).trim() : trimmed;
-    if (!exportStripped.startsWith('Z_AI_API_KEY')) continue;
-    const equalsIndex = exportStripped.indexOf('=');
-    if (equalsIndex === -1) continue;
-    let value = exportStripped.slice(equalsIndex + 1).trim();
-    if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
-      value = value.slice(1, -1);
+
+    // Handle PowerShell syntax: $env:Z_AI_API_KEY = "value"
+    if (shell === 'powershell' || shell === 'powershell-core') {
+      const envStripped = trimmed.startsWith('$env:') ? trimmed.slice(5) : trimmed;
+      if (!envStripped.startsWith('Z_AI_API_KEY')) continue;
+      const equalsIndex = envStripped.indexOf('=');
+      if (equalsIndex === -1) continue;
+      let value = envStripped.slice(equalsIndex + 1).trim();
+      if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
+        value = value.slice(1, -1);
+      }
+      if (normalizeApiKey(value)) return true;
+    } else {
+      // Handle Unix shell syntax: export Z_AI_API_KEY="value" or Z_AI_API_KEY="value"
+      const exportStripped = trimmed.startsWith('export ') ? trimmed.slice(7).trim() : trimmed;
+      if (!exportStripped.startsWith('Z_AI_API_KEY')) continue;
+      const equalsIndex = exportStripped.indexOf('=');
+      if (equalsIndex === -1) continue;
+      let value = exportStripped.slice(equalsIndex + 1).trim();
+      if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
+        value = value.slice(1, -1);
+      }
+      if (normalizeApiKey(value)) return true;
     }
-    if (normalizeApiKey(value)) return true;
   }
   return false;
 };
 
+/**
+ * Ensure Z.ai environment variable is set in the shell profile
+ * Supports: bash, zsh, PowerShell 5, PowerShell 7
+ */
 export const ensureZaiShellEnv = (opts: {
   apiKey?: string | null;
   configDir: string;
@@ -99,20 +220,49 @@ export const ensureZaiShellEnv = (opts: {
     return { status: 'skipped', message: 'Z_AI_API_KEY already set in environment' };
   }
 
+  // Determine shell type: from profile path if provided, otherwise detect from environment
   const profile = opts.profilePath ?? resolveShellProfile();
   if (!profile) {
-    return { status: 'failed', message: 'Unsupported shell; set Z_AI_API_KEY manually' };
+    return {
+      status: 'failed',
+      message: isWindows
+        ? 'Unsupported shell; please use PowerShell or Git Bash. Set Z_AI_API_KEY manually in settings.json.'
+        : 'Unsupported shell; set Z_AI_API_KEY manually',
+    };
+  }
+
+  const shell = opts.profilePath ? detectShellFromPath(opts.profilePath) : detectShell();
+
+  // Create directory if it doesn't exist (for PowerShell profiles)
+  const profileDir = path.dirname(profile);
+  if (!fs.existsSync(profileDir)) {
+    try {
+      fs.mkdirSync(profileDir, { recursive: true });
+    } catch {
+      // Ignore if directory creation fails
+    }
   }
 
   const existing = fs.existsSync(profile) ? fs.readFileSync(profile, 'utf8') : '';
-  if (hasZaiKeyInProfile(existing)) {
+  if (hasZaiKeyInProfile(existing, shell)) {
     return { status: 'skipped', message: 'Z_AI_API_KEY already set in shell profile', path: profile };
   }
-  const next = upsertBlock(existing, renderBlock(apiKey));
+
+  const block = renderBlock(apiKey, shell);
+  const next = upsertBlock(existing, block, shell);
   if (next === existing) {
     return { status: 'skipped', message: 'Shell profile already up to date', path: profile };
   }
 
   fs.writeFileSync(profile, next);
-  return { status: 'updated', path: profile, message: `Run: source ${profile}` };
+
+  // Return appropriate reload message based on shell
+  let reloadMessage: string;
+  if (shell === 'powershell' || shell === 'powershell-core') {
+    reloadMessage = `Run: . $PROFILE`;
+  } else {
+    reloadMessage = `Run: source ${profile}`;
+  }
+
+  return { status: 'updated', path: profile, message: reloadMessage };
 };
