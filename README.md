@@ -1,5 +1,11 @@
 # sneakpeek
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![GitHub release](https://img.shields.io/github/v/release/Pamacea/sneakpeek)](https://github.com/Pamacea/sneakpeek/releases/latest)
+[![CI](https://github.com/Pamacea/sneakpeek/actions/workflows/ci.yml/badge.svg)](https://github.com/Pamacea/sneakpeek/actions)
+
+
+
 Get a parallel build of Claude Code that unlocks feature-flagged capabilities like swarm mode.
 
 Demo video of swarm mode in action: https://x.com/NicerInPerson/status/2014989679796347375
